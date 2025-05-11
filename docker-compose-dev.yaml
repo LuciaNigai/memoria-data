@@ -5,7 +5,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data_dev:/var/lib/postgresql/data
+      - postgresdev_data:/var/lib/postgresql/data
     restart: always
     env_file:
       - dev.env
@@ -13,7 +13,7 @@ services:
       - memoriadev_network
 
 volumes:
-  postgres_data_dev:
+  postgresdev_data:
     driver: local
 
 networks:

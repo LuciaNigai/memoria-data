@@ -1,4 +1,4 @@
-Requirements before running the application
+### Requirements before running the application
 1. Have docker installed on your machine
 
 ### Running the application
