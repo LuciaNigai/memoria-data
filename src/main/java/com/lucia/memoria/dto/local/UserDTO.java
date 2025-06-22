@@ -1,23 +1,22 @@
 package com.lucia.memoria.dto.local;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-public record UserDTO(
-        @NotBlank
-        String username,
-
-        @NotBlank
-        @Pattern(regexp = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$", message = "Invalid email address")
-        String email,
-
-        @NotBlank
-        @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,20}$", message = "Password must contain at least one lowercase letter, one uppercase letter, one digit, one special character, and be between 8 to 20 characters long.")
-        String password,
-
-        LocalDateTime createdAt,
-        LocalDateTime lastLogin
-) {
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserDTO {
+    private UUID userId;
+    private String username;
+    private String password;
+    private String email;
+    private LocalDateTime createdAt;
+    private LocalDateTime lastLogin;
 }

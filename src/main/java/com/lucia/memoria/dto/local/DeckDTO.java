@@ -1,12 +1,22 @@
 package com.lucia.memoria.dto.local;
 
-import java.util.List;
 
-public record DeckDTO(
-        UserDTO userDTO,
-        String name,
-        DeckDTO parentDeck,
-        List<DeckDTO> childDecks,
-        List<CardDTO> cards
-) {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.List;
+import java.util.UUID;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class DeckDTO {
+    private UUID deckId;
+    private String name;
+    private String path;
+    private List<DeckDTO> childDecks;
+    private UUID userId;
 }

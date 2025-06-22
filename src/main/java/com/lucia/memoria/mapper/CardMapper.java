@@ -1,16 +1,25 @@
 package com.lucia.memoria.mapper;
 
 import com.lucia.memoria.dto.local.CardDTO;
+import com.lucia.memoria.dto.local.CardMinimalDTO;
 import com.lucia.memoria.model.Card;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
-import java.util.List;
+import java.util.UUID;
 
-@Mapper(componentModel = "spring", uses = {CardTypeMapper.class, FrontMapper.class, BackMapper.class, DeckMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring")
 public interface CardMapper {
-    CardDTO toDTO(Card card);
     Card toEntity(CardDTO cardDTO);
-    List<CardDTO> toDTO(List<Card> cardList);
-    List<Card> toEntity(List<CardDTO> cardDTOList);
+    @Mapping(target = "cardId", source = "cardId")
+    CardMinimalDTO toMinimalDTO(Card card);
+
+    @AfterMapping
+    default void setCardID(@MappingTarget Card card) {
+        if(card.getCardId() == null ) {
+            card.setCardId(UUID.randomUUID());
+        }
+    }
 }

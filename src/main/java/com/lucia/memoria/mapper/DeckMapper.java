@@ -1,35 +1,33 @@
 package com.lucia.memoria.mapper;
 
 import com.lucia.memoria.dto.local.DeckDTO;
+import com.lucia.memoria.dto.local.DeckMinimalDTO;
+import com.lucia.memoria.model.Card;
 import com.lucia.memoria.model.Deck;
-import org.mapstruct.Context;
+import com.lucia.memoria.model.User;
+import org.mapstruct.AfterMapping;
+import org.mapstruct.BeforeMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
-import org.mapstruct.ReportingPolicy;
 
-import java.util.List;
+import java.util.UUID;
 
-@Mapper(componentModel = "spring", uses = {UserMapper.class, CardMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring")
 public interface DeckMapper {
+    @Mapping(target = "deckId", source = "deckId")
+    @Mapping(target = "userId", source = "user", qualifiedByName = "userToUserId")
+    DeckDTO toDTO(Deck deck);
 
-    @Mapping(target = "parentDeck", source = "parentDeck", qualifiedByName = "mapParentDeck")
-    DeckDTO toDTO(Deck deck, @Context DeckCycleAvoidingContext context);
+    @Mapping(target = "deckId", source = "deckId")
+    DeckMinimalDTO toMinimalDTO(Deck deck);
 
-    List<DeckDTO> toDTO(List<Deck> decks, @Context DeckCycleAvoidingContext context);
+    Deck toEntityFromMinimal(DeckMinimalDTO deckMinimalDTO);
 
-    List<Deck> toEntity(List<DeckDTO> deckDTOList, @Context DeckCycleAvoidingContext context);
-
-    default DeckDTO toDTO(Deck deck) {
-        return toDTO(deck, new DeckCycleAvoidingContext());
+    @Named("userToUserId")
+    default UUID mapUserToUserId(User user) {
+        return user == null ? null : user.getUserId();
     }
 
-    default List<DeckDTO> toDTO(List<Deck> decks) {
-        return toDTO(decks, new DeckCycleAvoidingContext());
-    }
-
-    @Named("mapParentDeck")
-    default DeckDTO mapParentDeck(Deck deck, @Context DeckCycleAvoidingContext context) {
-        return toDTO(deck, context);
-    }
 }

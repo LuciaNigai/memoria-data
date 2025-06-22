@@ -1,6 +1,5 @@
 package com.lucia.memoria.dto.local;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,10 +11,8 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CardDTO {
+public class CardMinimalDTO {
     private UUID cardId;
-    DeckMinimalDTO deck;
-    String front;
-    String back;
-
+    private String front;
+    private String back;
 }

@@ -11,19 +11,28 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 
 import java.util.List;
+import java.util.UUID;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "decks", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"name", "user_id", "parent_deck_id"})
-})
+@Table(name = "decks")
 public class Deck {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "deck_id")
-    private Long deckId;
+    private Long id;
+
+    @Column(name = "deck_id", nullable = false, unique = true, updatable = false)
+    private UUID deckId = UUID.randomUUID();
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
@@ -33,72 +42,11 @@ public class Deck {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_deck_id")
+    @JoinColumn(name = "parent_id")
     private Deck parentDeck;
 
-    @OneToMany(mappedBy = "parentDeck")
-    private List<Deck> childDecks;
+    private String path;
 
     @OneToMany(mappedBy = "deck")
     private List<Card> cards;
-
-    public Deck() {
-    }
-
-    public Deck(Long deckId, User user, String name, Deck parentDeck, List<Deck> childDecks, List<Card> cards) {
-        this.deckId = deckId;
-        this.user = user;
-        this.name = name;
-        this.parentDeck = parentDeck;
-        this.childDecks = childDecks;
-        this.cards = cards;
-    }
-
-    public Long getDeckId() {
-        return deckId;
-    }
-
-    public void setDeckId(Long deckId) {
-        this.deckId = deckId;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Deck getParentDeck() {
-        return parentDeck;
-    }
-
-    public void setParentDeck(Deck parentDeck) {
-        this.parentDeck = parentDeck;
-    }
-
-    public List<Deck> getChildDecks() {
-        return childDecks;
-    }
-
-    public void setChildDecks(List<Deck> childDecks) {
-        this.childDecks = childDecks;
-    }
-
-    public List<Card> getCards() {
-        return cards;
-    }
-
-    public void setCards(List<Card> cards) {
-        this.cards = cards;
-    }
 }
