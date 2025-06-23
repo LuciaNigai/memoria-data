@@ -35,14 +35,14 @@ public class Deck {
     private UUID deckId = UUID.randomUUID();
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
     private User user;
 
     @Column(name = "name", nullable = false)
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
+    @JoinColumn(name = "parent_id", referencedColumnName = "id")
     private Deck parentDeck;
 
     private String path;

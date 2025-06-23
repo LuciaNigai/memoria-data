@@ -1,6 +1,14 @@
 package com.lucia.memoria.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,18 +25,19 @@ import java.util.UUID;
 public class Field {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String Id;
+    private Long Id;
 
-    @Column(name = "fields_id", nullable = false, unique = true, updatable = false)
+    @Column(name = "field_id", nullable = false, unique = true, updatable = false)
     private UUID fieldId = UUID.randomUUID();
 
     private String content;
-//
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "card_id")
-//    Card card;
-////
-////    @ManyToOne(fetch = FetchType.LAZY)
-////    @JoinColumn(name = "field_template_id")
-////    FieldTemplate fieldTemplate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "card_id", referencedColumnName = "id")
+    Card card;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "field_template_id", referencedColumnName = "id")
+    FieldTemplate fieldTemplate;
+
 }

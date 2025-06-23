@@ -1,13 +1,26 @@
 package com.lucia.memoria.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
 import java.util.UUID;
+import org.antlr.v4.runtime.misc.OrderedHashSet;
 
 @Getter
 @Setter
@@ -24,17 +37,18 @@ public class Card {
     private UUID cardId = UUID.randomUUID();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "deck_id")
+    @JoinColumn(name = "deck_id", referencedColumnName = "id")
     private Deck deck;
 
     @OneToOne
-    @JoinColumn(name = "template_id")
+    @JoinColumn(name = "template_id", referencedColumnName = "id")
     Template template;
 
-//    @OneToMany(mappedBy = "card")
-//    List<Field> fields;
+    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
+    Set<Field> fields = new OrderedHashSet<>();
 
-    private String front;
-
-    private String back;
+    public void addField(Field field) {
+        fields.add(field);
+        field.setCard(this);
+    }
 }
