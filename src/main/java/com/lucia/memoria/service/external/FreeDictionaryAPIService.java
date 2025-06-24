@@ -11,16 +11,19 @@ import java.util.List;
 
 @Service
 public class FreeDictionaryAPIService {
-    private final WebClient webClient;
 
-    public FreeDictionaryAPIService(WebClient.Builder webClientBuilder, ExternalAPIConfig externalAPIConfig) {
-        this.webClient = webClientBuilder.baseUrl(externalAPIConfig.getFreeDictionaryUrl()).build();
-    }
+  private final WebClient webClient;
 
-    public Mono<List<ResponseDTO>> callExternalApi(String word) {
-        return webClient.get()
-                .uri("/{word}", word)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<ResponseDTO>>() {});
-    }
+  public FreeDictionaryAPIService(WebClient.Builder webClientBuilder,
+      ExternalAPIConfig externalAPIConfig) {
+    this.webClient = webClientBuilder.baseUrl(externalAPIConfig.getFreeDictionaryUrl()).build();
+  }
+
+  public Mono<List<ResponseDTO>> callExternalApi(String word) {
+    return webClient.get()
+        .uri("/{word}", word)
+        .retrieve()
+        .bodyToMono(new ParameterizedTypeReference<List<ResponseDTO>>() {
+        });
+  }
 }

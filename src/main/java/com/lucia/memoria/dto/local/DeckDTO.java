@@ -14,9 +14,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DeckDTO {
-    private UUID deckId;
-    private String name;
-    private String path;
-    private List<DeckDTO> childDecks;
-    private UUID userId;
+
+  private UUID deckId;
+  private String name;
+  private String path;
+  private List<DeckDTO> childDecks;
+  private UUID userId;
 }

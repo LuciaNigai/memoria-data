@@ -15,24 +15,27 @@ import java.util.List;
 @RestController
 @RequestMapping("/search")
 public class ExternalAPIController {
-    private final FreeDictionaryAPIService freeDictionaryAPIService;
-    private final GoogleAPIService googleAPIService;
 
-    public ExternalAPIController(FreeDictionaryAPIService freeDictionaryAPIService, GoogleAPIService googleAPIService) {
-        this.freeDictionaryAPIService = freeDictionaryAPIService;
-        this.googleAPIService = googleAPIService;
-    }
+  private final FreeDictionaryAPIService freeDictionaryAPIService;
+  private final GoogleAPIService googleAPIService;
 
-    @GetMapping("/meaning/{word}")
-    public Mono<ResponseEntity<List<ResponseDTO>>> getWordMeaning(@PathVariable String word) {
-        return freeDictionaryAPIService.callExternalApi(word)
-                .map(ResponseEntity::ok);
-    }
+  public ExternalAPIController(FreeDictionaryAPIService freeDictionaryAPIService,
+      GoogleAPIService googleAPIService) {
+    this.freeDictionaryAPIService = freeDictionaryAPIService;
+    this.googleAPIService = googleAPIService;
+  }
 
-    @GetMapping("/translation/{source}/{target}/{word}")
-    public Mono<ResponseEntity<String>> getWordMeaning(@PathVariable String source, @PathVariable String target, @PathVariable String word) {
-        return googleAPIService.callExternalApi(source, target, word)
-                .map(ResponseEntity::ok);
-    }
+  @GetMapping("/meaning/{word}")
+  public Mono<ResponseEntity<List<ResponseDTO>>> getWordMeaning(@PathVariable String word) {
+    return freeDictionaryAPIService.callExternalApi(word)
+        .map(ResponseEntity::ok);
+  }
+
+  @GetMapping("/translation/{source}/{target}/{word}")
+  public Mono<ResponseEntity<String>> getWordMeaning(@PathVariable String source,
+      @PathVariable String target, @PathVariable String word) {
+    return googleAPIService.callExternalApi(source, target, word)
+        .map(ResponseEntity::ok);
+  }
 
 }

@@ -12,7 +12,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FieldDTO {
-    FieldTemplateDTO fieldTemplate;
-    private UUID fieldId;
-    String content;
+
+  TemplateFieldDTO fieldTemplate;
+  private UUID fieldId;
+  String content;
 }

@@ -17,29 +17,30 @@ import java.util.UUID;
 @Controller
 @RequestMapping("/user")
 public class UserController {
-    private  final UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+  private final UserService userService;
 
-    @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
-        UserDTO savedUser = userService.saveUser(userDTO);
-        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
-    }
+  public UserController(UserService userService) {
+    this.userService = userService;
+  }
 
-    // Get user by UUID (GET /api/users/{userId})
-    @GetMapping("/{userId}")
-    public ResponseEntity<UserDTO> getUserByUserId(@PathVariable UUID userId) {
-        UserDTO user = userService.getUserByUserId(userId);
-        return ResponseEntity.ok(user);
-    }
+  @PostMapping
+  public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
+    UserDTO savedUser = userService.saveUser(userDTO);
+    return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+  }
 
-    // Get all users (GET /api/users)
-    @GetMapping
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        List<UserDTO> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
-    }
+  // Get user by UUID (GET /api/users/{userId})
+  @GetMapping("/{userId}")
+  public ResponseEntity<UserDTO> getUserByUserId(@PathVariable UUID userId) {
+    UserDTO user = userService.findByUserId(userId);
+    return ResponseEntity.ok(user);
+  }
+
+  // Get all users (GET /api/users)
+  @GetMapping
+  public ResponseEntity<List<UserDTO>> getAllUsers() {
+    List<UserDTO> users = userService.getAllUsers();
+    return ResponseEntity.ok(users);
+  }
 }

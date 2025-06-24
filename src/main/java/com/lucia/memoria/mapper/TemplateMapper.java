@@ -9,20 +9,19 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
-@Mapper(uses = FieldTemplateMapper.class)
+@Mapper(uses = TemplateFieldMapper.class)
 public interface TemplateMapper {
-    @Mapping(target = "templateId", source = "templateId")
-    @Mapping(target = "ownerId", source = "owner", qualifiedByName = "ownerToOwnerId")
-    TemplateDTO toDTO(Template template);
 
-    @Mapping(target = "templateId", source = "templateId")
-    @Mapping(target = "ownerId", source = "owner", qualifiedByName = "ownerToOwnerId")
-    List<TemplateDTO> toDTOList(List<Template> templateList);
+  @Mapping(target = "ownerId", source = "owner", qualifiedByName = "ownerToOwnerId")
+  TemplateDTO toDTO(Template template);
 
-    Template toEntity(TemplateDTO templateDTO);
+  @Mapping(target = "ownerId", source = "owner", qualifiedByName = "ownerToOwnerId")
+  List<TemplateDTO> toDTOList(List<Template> templateList);
 
-    @Named("ownerToOwnerId")
-    default UUID mapOwnerToOwnerId(User user) {
-        return user == null ? null : user.getUserId();
-    }
+  Template toEntity(TemplateDTO templateDTO);
+
+  @Named("ownerToOwnerId")
+  default UUID mapOwnerToOwnerId(User user) {
+    return user == null ? null : user.getUserId();
+  }
 }

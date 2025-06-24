@@ -1,46 +1,44 @@
 package com.lucia.memoria.service.local;
 
-import com.lucia.memoria.dto.local.FieldTemplateDTO;
+import com.lucia.memoria.dto.local.TemplateFieldDTO;
 import com.lucia.memoria.dto.local.TemplateDTO;
-import com.lucia.memoria.mapper.FieldTemplateMapper;
+import com.lucia.memoria.exception.NotFoundException;
+import com.lucia.memoria.mapper.TemplateFieldMapper;
 import com.lucia.memoria.mapper.TemplateMapper;
-import com.lucia.memoria.model.FieldTemplate;
+import com.lucia.memoria.model.TemplateField;
 import com.lucia.memoria.model.Template;
 import com.lucia.memoria.model.User;
 import com.lucia.memoria.repository.TemplateRepository;
-import com.lucia.memoria.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TemplateService {
 
-  private final UserRepository userRepository;
   private final TemplateRepository templateRepository;
-  private final FieldTemplateMapper fieldTemplateMapper;
+  private final UserService userService;
+  private final TemplateFieldMapper templateFieldMapper;
   private final TemplateMapper templateMapper;
 
-  public TemplateService(UserRepository userRepository, TemplateRepository templateRepository,
-      FieldTemplateMapper fieldTemplateMapper, TemplateMapper templateMapper) {
-    this.userRepository = userRepository;
+  public TemplateService(TemplateRepository templateRepository, UserService userService,
+      TemplateFieldMapper templateFieldMapper, TemplateMapper templateMapper) {
     this.templateRepository = templateRepository;
-    this.fieldTemplateMapper = fieldTemplateMapper;
+    this.userService = userService;
+    this.templateFieldMapper = templateFieldMapper;
     this.templateMapper = templateMapper;
   }
 
   @Transactional
   public TemplateDTO createTemplate(TemplateDTO templateDTO) {
-    Optional<User> owner = userRepository.findByUserId(templateDTO.getOwnerId());
+    User owner = userService.findUserByUserId(templateDTO.getOwnerId());
 
-    if (owner.isEmpty()) {
-      throw new IllegalArgumentException("User with such id was not found");
-    }
     Optional<Template> templateExists = templateRepository.findByNameAndOwner(templateDTO.getName(),
-        owner.get());
+        owner);
 
     if (templateExists.isPresent()) {
       throw new IllegalArgumentException("Template with that name already exists");
@@ -49,12 +47,12 @@ public class TemplateService {
     Template template = new Template();
     template.setTemplateId(UUID.randomUUID());
     template.setName(templateDTO.getName());
-    template.setOwner(owner.get());
+    template.setOwner(owner);
 
-    for (FieldTemplateDTO fieldTemplateDTO : templateDTO.getFields()) {
-      FieldTemplate fieldTemplate = fieldTemplateMapper.toEntity(fieldTemplateDTO);
-      fieldTemplate.setFieldTemplateId(UUID.randomUUID());
-      template.addField(fieldTemplate);
+    for (TemplateFieldDTO templateFieldDTO : templateDTO.getFields()) {
+      TemplateField templateField = templateFieldMapper.toEntity(templateFieldDTO);
+      templateField.setFieldTemplateId(UUID.randomUUID());
+      template.addField(templateField);
     }
 
     return templateMapper.toDTO(templateRepository.save(template));
@@ -69,13 +67,26 @@ public class TemplateService {
     }
   }
 
-  public List<TemplateDTO> findAllOwnerTemplates(UUID ownerID) {
-    Optional<User> owner = userRepository.findByUserId(ownerID);
 
-    if (owner.isEmpty()) {
-      throw new IllegalArgumentException("User with such id was not found");
+  public Template findTemplateEntityById(UUID templateId) {
+    Optional<Template> template = templateRepository.findByTemplateId(templateId);
+    if (template.isPresent()) {
+      return template.get();
+    } else {
+      throw new NoSuchElementException("Template Not found");
     }
+  }
 
-    return templateMapper.toDTOList(templateRepository.findAllByOwner(owner.get()));
+  @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
+  public Template findTemplateWithFields(UUID templateId) {
+    return templateRepository.findTemplateByTemplateIdWithFields(
+            templateId)
+        .orElseThrow(() -> new NotFoundException("Template not found"));
+  }
+
+  public List<TemplateDTO> findAllOwnerTemplates(UUID ownerID) {
+    User owner = userService.findUserByUserId(ownerID);
+
+    return templateMapper.toDTOList(templateRepository.findAllByOwner(owner));
   }
 }

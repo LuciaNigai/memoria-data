@@ -11,6 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FieldMinimalDTO {
+
   private String content;
-  UUID fieldTemplateId;
+  UUID templateFieldId;
 }

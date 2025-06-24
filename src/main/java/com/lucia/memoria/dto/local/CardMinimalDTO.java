@@ -1,7 +1,6 @@
 package com.lucia.memoria.dto.local;
 
 import java.util.List;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,8 +13,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CardMinimalDTO {
-    private UUID cardId;
-    private UUID deckId;
-    UUID templateId;
-    Set<FieldMinimalDTO> fieldMinimalDTOList;
+
+  private UUID cardId;
+  private UUID deckId;
+  UUID templateId;
+  List<FieldMinimalDTO> fieldMinimalDTOList;
 }

@@ -23,20 +23,20 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table(name = "field_templates")
-public class FieldTemplate {
+public class TemplateField {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "field_template_id", nullable = false, unique = true, updatable = false)
-    private UUID fieldTemplateId = UUID.randomUUID();
+  @Column(name = "field_template_id", nullable = false, unique = true, updatable = false)
+  private UUID fieldTemplateId = UUID.randomUUID();
 
-    private String name;
+  private String name;
 
-    private FieldRole fieldRole;
+  private FieldRole fieldRole;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "template_id", referencedColumnName = "id")
-    private Template template;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "template_id", referencedColumnName = "id")
+  private Template template;
 }

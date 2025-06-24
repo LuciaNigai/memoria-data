@@ -12,19 +12,18 @@ import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface DeckMapper {
-    @Mapping(target = "deckId", source = "deckId")
-    @Mapping(target = "userId", source = "user", qualifiedByName = "userToUserId")
-    DeckDTO toDTO(Deck deck);
 
-    @Mapping(target = "deckId", source = "deckId")
-    @Mapping(target = "userId", source = "user", qualifiedByName = "userToUserId")
-    DeckMinimalDTO toMinimalDTO(Deck deck);
+  @Mapping(target = "userId", source = "user", qualifiedByName = "userToUserId")
+  DeckDTO toDTO(Deck deck);
 
-    Deck toEntityFromMinimal(DeckMinimalDTO deckMinimalDTO);
+  @Mapping(target = "userId", source = "user", qualifiedByName = "userToUserId")
+  DeckMinimalDTO toMinimalDTO(Deck deck);
 
-    @Named("userToUserId")
-    default UUID mapUserToUserId(User user) {
-        return user == null ? null : user.getUserId();
-    }
+  Deck toEntityFromMinimal(DeckMinimalDTO deckMinimalDTO);
+
+  @Named("userToUserId")
+  default UUID mapUserToUserId(User user) {
+    return user == null ? null : user.getUserId();
+  }
 
 }

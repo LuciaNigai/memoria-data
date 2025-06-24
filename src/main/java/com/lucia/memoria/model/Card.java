@@ -11,16 +11,16 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.UUID;
-import org.antlr.v4.runtime.misc.OrderedHashSet;
 
 @Getter
 @Setter
@@ -29,26 +29,27 @@ import org.antlr.v4.runtime.misc.OrderedHashSet;
 @Entity
 @Table(name = "cards")
 public class Card {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @Column(name = "card_id", nullable = false, unique = true, updatable = false)
-    private UUID cardId = UUID.randomUUID();
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "deck_id", referencedColumnName = "id")
-    private Deck deck;
+  @Column(name = "card_id", nullable = false, unique = true, updatable = false)
+  private UUID cardId = UUID.randomUUID();
 
-    @OneToOne
-    @JoinColumn(name = "template_id", referencedColumnName = "id")
-    Template template;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "deck_id", referencedColumnName = "id")
+  private Deck deck;
 
-    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<Field> fields = new OrderedHashSet<>();
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "template_id", referencedColumnName = "id")
+  Template template;
 
-    public void addField(Field field) {
-        fields.add(field);
-        field.setCard(this);
-    }
+  @OneToMany(mappedBy = "card", cascade = CascadeType.ALL)
+  List<Field> fields = new ArrayList<>();
+
+  public void addField(Field field) {
+    fields.add(field);
+    field.setCard(this);
+  }
 }

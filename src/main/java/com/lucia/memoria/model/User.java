@@ -25,28 +25,29 @@ import java.util.UUID;
 @Entity
 @Table(name = "users")
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @Column(name = "user_id", nullable = false, unique = true, updatable = false)
-    private UUID userId = UUID.randomUUID();
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "username", nullable = false)
-    private String username;
+  @Column(name = "user_id", nullable = false, unique = true, updatable = false)
+  private UUID userId = UUID.randomUUID();
 
-    @Column(name = "email", unique = true, nullable = false)
-    private String email;
+  @Column(name = "username", nullable = false)
+  private String username;
 
-    @Column(name = "password", nullable = false)
-    private String password;
+  @Column(name = "email", unique = true, nullable = false)
+  private String email;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+  @Column(name = "password", nullable = false)
+  private String password;
 
-    @Column(name = "last_login")
-    private LocalDateTime lastLogin;
+  @Column(name = "created_at", nullable = false)
+  private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "user",  cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Deck> decks;
+  @Column(name = "last_login")
+  private LocalDateTime lastLogin;
+
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  private List<Deck> decks;
 }

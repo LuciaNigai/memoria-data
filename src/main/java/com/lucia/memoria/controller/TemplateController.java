@@ -22,14 +22,13 @@ public class TemplateController {
     this.templateService = templateService;
   }
 
-
   @PostMapping
   public ResponseEntity<TemplateDTO> saveTemplate(@RequestBody TemplateDTO templateDTO) {
     return ResponseEntity.ok().body(templateService.createTemplate(templateDTO));
   }
 
   @GetMapping("/{templateId}")
-  public ResponseEntity<TemplateDTO> findTemplateById(@PathVariable UUID templateId) {
+  public ResponseEntity<TemplateDTO> findTemplateById(@PathVariable("templateId") UUID templateId) {
     return ResponseEntity.ok().body(templateService.findTemplateById(templateId));
   }
 

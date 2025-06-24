@@ -12,8 +12,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DeckMinimalDTO {
-    private UUID deckId;
-    private String name;
-    private String path;
-    private UUID userId;
+
+  private UUID deckId;
+  private String name;
+  private String path;
+  private UUID userId;
 }

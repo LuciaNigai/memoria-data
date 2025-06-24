@@ -6,8 +6,6 @@ import com.lucia.memoria.mapper.DeckMapper;
 import com.lucia.memoria.model.Deck;
 import com.lucia.memoria.model.User;
 import com.lucia.memoria.repository.DeckRepository;
-import com.lucia.memoria.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -15,90 +13,95 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
 public class DeckService {
 
-    private final DeckRepository deckRepository;
-    private final UserRepository userRepository;
-    private final DeckMapper deckMapper;
+  private final DeckRepository deckRepository;
+  private final UserService userService;
+  private final DeckMapper deckMapper;
 
-    public DeckService(DeckRepository deckRepository, UserRepository userRepository, DeckMapper deckMapper) {
-        this.deckRepository = deckRepository;
-        this.userRepository = userRepository;
-        this.deckMapper = deckMapper;
+  public DeckService(DeckRepository deckRepository, UserService userService,
+      DeckMapper deckMapper) {
+    this.deckRepository = deckRepository;
+    this.userService = userService;
+    this.deckMapper = deckMapper;
+  }
+
+  @Transactional
+  public DeckDTO saveDeck(DeckMinimalDTO dto) {
+    Deck parent = null;
+    String path = dto.getPath();
+
+    User user = userService.findUserByUserId(dto.getUserId());
+
+    if (path != null && !path.isBlank()) {
+      parent = deckRepository.findByPath(path)
+          .orElseThrow(() -> new IllegalArgumentException("Parent path was not found"));
     }
 
-    @Transactional
-    public DeckDTO saveDeck(DeckMinimalDTO dto) {
-        Deck parent =null;
-        String path = dto.getPath();
+    log.info("dto path {}", path);
 
-        Optional<User> user = userRepository.findByUserId(dto.getUserId());
-        if(user.isEmpty()) {
-            throw new IllegalArgumentException("User with such id is not found");
-        }
+    String newPath = parent == null ? dto.getName() : path + "::" + dto.getName();
 
-        if(path != null && !path.isBlank()) {
-            parent = deckRepository.findByPath(path)
-                    .orElseThrow(() -> new IllegalArgumentException("Parent path was not found"));
-        }
+    log.info("dto parent {}", parent);
 
-        log.info("dto path {}", path);
-
-        String newPath = parent == null ? dto.getName() : path + "::" + dto.getName();
-
-        log.info("dto parent {}", parent);
-
-        if(deckRepository.findByPathAndUser(newPath, user.get()).isPresent()) {
-            throw new IllegalArgumentException("Deck with that path already exists");
-        }
-
-
-
-        Deck deck = new Deck();
-        deck.setDeckId(UUID.randomUUID());
-        deck.setParentDeck(parent);
-        deck.setPath(newPath);
-        deck.setName(dto.getName());
-        deck.setUser(user.get());
-
-        Deck saved = deckRepository.save(deck);
-        return deckMapper.toDTO(saved);
+    if (deckRepository.findByPathAndUser(newPath, user).isPresent()) {
+      throw new IllegalArgumentException("Deck with that path already exists");
     }
 
-    @Transactional
-    public List<DeckDTO> getUserFullDeckTree(UUID userId) {
-        Optional<User> user = userRepository.findByUserId(userId);
-        if(user.isEmpty()) {
-            throw new IllegalArgumentException("User is not valid");
-        }
+    Deck deck = new Deck();
+    deck.setDeckId(UUID.randomUUID());
+    deck.setParentDeck(parent);
+    deck.setPath(newPath);
+    deck.setName(dto.getName());
+    deck.setUser(user);
 
-        List<Deck> allDecks = deckRepository.findAllByUser(user.get());
-        Map<String, DeckDTO> map = new HashMap<>();
+    Deck saved = deckRepository.save(deck);
+    return deckMapper.toDTO(saved);
+  }
 
-        for(Deck deck : allDecks) {
-            DeckDTO dto = deckMapper.toDTO(deck);
-            dto.setChildDecks(new ArrayList<>());
-            map.put(deck.getPath(), dto);
-        }
+  @Transactional(readOnly = true)
+  public Deck findByDeckId(UUID deckId) {
+    return deckRepository.findByDeckId(deckId)
+        .orElseThrow(() -> new IllegalArgumentException("Wrong deck id"));
+  }
 
-        List<DeckDTO> roots = new ArrayList<>();
+  @Transactional(readOnly = true)
+  public Deck findByPath(String path) {
+    return deckRepository.findByPath(path)
+        .orElseThrow(() -> new IllegalArgumentException("Deck not found: " + path));
+  }
 
-        for(Deck deck : allDecks) {
-            DeckDTO current = map.get(deck.getPath());
-            if(deck.getParentDeck() == null) {
-                roots.add(current);
-            } else {
-                DeckDTO parentDTO = map.get(deck.getParentDeck().getPath());
-                parentDTO.getChildDecks().add(current);
-            }
-        }
+  @Transactional(readOnly = true)
+  public List<DeckDTO> getUserFullDeckTree(UUID userId) {
+    User user = userService.findUserByUserId(userId);
 
-        return roots;
+    List<Deck> allDecks = deckRepository.findAllByUser(user);
+    Map<String, DeckDTO> map = new HashMap<>();
+
+    for (Deck deck : allDecks) {
+      DeckDTO dto = deckMapper.toDTO(deck);
+      dto.setChildDecks(new ArrayList<>());
+      map.put(deck.getPath(), dto);
     }
+
+    List<DeckDTO> roots = new ArrayList<>();
+
+    for (Deck deck : allDecks) {
+      DeckDTO current = map.get(deck.getPath());
+      if (deck.getParentDeck() == null) {
+        roots.add(current);
+      } else {
+        DeckDTO parentDTO = map.get(deck.getParentDeck().getPath());
+        parentDTO.getChildDecks().add(current);
+      }
+    }
+
+    return roots;
+  }
 
 }

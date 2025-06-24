@@ -10,19 +10,20 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", uses = {DeckMapper.class, CardMapper.class})
 public abstract class DeckWithCardsMapper {
-    @Autowired
-    protected DeckMapper deckMapper;
 
-    @Autowired
-    protected CardMapper cardMapper;
+  @Autowired
+  protected DeckMapper deckMapper;
 
-    public ResponseDeckWithCardsDTO toDTO(Deck deck, List<Card> cards) {
-        ResponseDeckWithCardsDTO dto = new ResponseDeckWithCardsDTO();
-        dto.setDeck(deckMapper.toMinimalDTO(deck));
-        dto.setCards(cards.stream()
-                .map(cardMapper::toMinimalDTO)
-                .toList());
+  @Autowired
+  protected CardMapper cardMapper;
 
-        return dto;
-    }
+  public ResponseDeckWithCardsDTO toDTO(Deck deck, List<Card> cards) {
+    ResponseDeckWithCardsDTO dto = new ResponseDeckWithCardsDTO();
+    dto.setDeck(deckMapper.toMinimalDTO(deck));
+    dto.setCards(cards.stream()
+        .map(cardMapper::toMinimalDTO)
+        .toList());
+
+    return dto;
+  }
 }

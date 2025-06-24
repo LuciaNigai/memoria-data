@@ -3,26 +3,28 @@ package com.lucia.memoria.mapper;
 import com.lucia.memoria.dto.local.FieldDTO;
 import com.lucia.memoria.dto.local.FieldMinimalDTO;
 import com.lucia.memoria.model.Field;
-import com.lucia.memoria.model.FieldTemplate;
+import com.lucia.memoria.model.TemplateField;
 import java.util.List;
 import java.util.UUID;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
-@Mapper(uses = FieldTemplateMapper.class)
+@Mapper(uses = TemplateFieldMapper.class)
 public interface FieldMapper {
-    @Mapping(target = "fieldId", source = "fieldId")
-    FieldDTO toDTO(Field field);
-    @Mapping(target = "fieldTemplateId", source = "fieldTemplate", qualifiedByName = "fieldTemplateToFieldTemplateId")
-    FieldMinimalDTO toMinimalDTO(Field field);
-    @Mapping(target = "fieldTemplateId", source = "fieldTemplate", qualifiedByName = "fieldTemplateToFieldTemplateId")
-    List<FieldMinimalDTO> toMinimalDTOList(List<Field> fields);
 
-    Field toEntity(FieldDTO fieldDTO);
+  FieldDTO toDTO(Field field);
 
-    @Named("fieldTemplateToFieldTemplateId")
-    default UUID mapFieldTemplateToFieldTemplateId(FieldTemplate fieldTemplate) {
-        return fieldTemplate == null ? null : fieldTemplate.getFieldTemplateId();
-    }
+  @Mapping(target = "templateFieldId", source = "templateField", qualifiedByName = "templateFieldToTemplateFieldId")
+  FieldMinimalDTO toMinimalDTO(Field field);
+
+  @Mapping(target = "templateFieldId", source = "templateField", qualifiedByName = "templateFieldToTemplateFieldId")
+  List<FieldMinimalDTO> toMinimalDTOList(List<Field> fields);
+
+  Field toEntity(FieldDTO fieldDTO);
+
+  @Named("templateFieldToTemplateFieldId")
+  default UUID mapTemplateFieldToTemplateFieldId(TemplateField templateField) {
+    return templateField == null ? null : templateField.getFieldTemplateId();
+  }
 }

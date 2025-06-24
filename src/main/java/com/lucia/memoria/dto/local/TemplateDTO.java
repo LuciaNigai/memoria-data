@@ -1,6 +1,6 @@
 package com.lucia.memoria.dto.local;
 
-import java.util.Set;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,8 +13,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TemplateDTO {
-    private UUID templateId;
-    private UUID ownerId;
-    String name;
-    Set<FieldTemplateDTO> fields;
+
+  private UUID templateId;
+  private UUID ownerId;
+  String name;
+  List<TemplateFieldDTO> fields;
 }

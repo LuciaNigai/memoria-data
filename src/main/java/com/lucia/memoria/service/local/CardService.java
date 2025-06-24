@@ -10,19 +10,14 @@ import com.lucia.memoria.helper.FieldRole;
 import com.lucia.memoria.mapper.CardMapper;
 import com.lucia.memoria.mapper.DeckWithCardsMapper;
 import com.lucia.memoria.mapper.FieldMapper;
-import com.lucia.memoria.mapper.FieldTemplateMapper;
+import com.lucia.memoria.mapper.TemplateFieldMapper;
 import com.lucia.memoria.model.Card;
 import com.lucia.memoria.model.Deck;
 import com.lucia.memoria.model.Field;
-import com.lucia.memoria.model.FieldTemplate;
+import com.lucia.memoria.model.TemplateField;
 import com.lucia.memoria.model.Template;
 import com.lucia.memoria.repository.CardRepository;
-import com.lucia.memoria.repository.DeckRepository;
-import com.lucia.memoria.repository.FieldTemplateRepository;
-import com.lucia.memoria.repository.TemplateRepository;
-import jakarta.transaction.Transactional;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -30,56 +25,53 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
 public class CardService {
 
-  private final DeckRepository deckRepository;
-  private final FieldTemplateRepository fieldTemplateRepository;
+  private final CardRepository cardRepository;
+  private final DeckService deckService;
+  private final TemplateService templateService;
+  private final TemplateFieldService templateFieldService;
   private final CardMapper cardMapper;
   private final FieldMapper fieldMapper;
-  private final FieldTemplateMapper fieldTemplateMapper;
+  private final TemplateFieldMapper templateFieldMapper;
   private final DeckWithCardsMapper deckWithCardsMapper;
-  private final CardRepository cardRepository;
-  private final TemplateRepository templateRepository;
 
-  public CardService(DeckRepository deckRepository,
-      FieldTemplateRepository fieldTemplateRepository, CardMapper cardMapper,
-      FieldMapper fieldMapper, FieldTemplateMapper fieldTemplateMapper,
-      DeckWithCardsMapper deckWithCardsMapper, CardRepository cardRepository,
-      TemplateRepository templateRepository) {
-    this.deckRepository = deckRepository;
-    this.fieldTemplateRepository = fieldTemplateRepository;
+
+  public CardService(CardRepository cardRepository, DeckService deckService,
+      TemplateService templateService, TemplateFieldService templateFieldService,
+      CardMapper cardMapper, FieldMapper fieldMapper, TemplateFieldMapper templateFieldMapper,
+      DeckWithCardsMapper deckWithCardsMapper) {
+    this.cardRepository = cardRepository;
+    this.deckService = deckService;
+    this.templateService = templateService;
+    this.templateFieldService = templateFieldService;
     this.cardMapper = cardMapper;
     this.fieldMapper = fieldMapper;
-    this.fieldTemplateMapper = fieldTemplateMapper;
+    this.templateFieldMapper = templateFieldMapper;
     this.deckWithCardsMapper = deckWithCardsMapper;
-    this.cardRepository = cardRepository;
-    this.templateRepository = templateRepository;
   }
 
   @Transactional
   public CardMinimalDTO saveCard(CardMinimalDTO cardDTO) {
-    Deck deck = deckRepository.findByDeckId(cardDTO.getDeckId())
-        .orElseThrow(() -> new IllegalArgumentException("Wrong deck id"));
-
-    Template template = templateRepository.findByTemplateId(cardDTO.getTemplateId())
-        .orElseThrow(() -> new IllegalArgumentException("Wrong template id"));
+    Deck deck = deckService.findByDeckId(cardDTO.getDeckId());
+    Template template = templateService.findTemplateEntityById(cardDTO.getTemplateId());
 
     Card card = new Card();
     card.setCardId(UUID.randomUUID());
     card.setTemplate(template);
 
     for (FieldMinimalDTO minimalDTO : cardDTO.getFieldMinimalDTOList()) {
-      FieldTemplate fieldTemplate = fieldTemplateRepository.findByFieldTemplateIdAndTemplate(
-              minimalDTO.getFieldTemplateId(), template)
-          .orElseThrow(() -> new IllegalArgumentException("Target template field does not exists"));
+      TemplateField templateField = templateFieldService.findByFieldTemplateIdAndTemplate(
+          minimalDTO.getTemplateFieldId(), template);
 
       Field field = new Field();
       field.setFieldId(UUID.randomUUID());
       field.setContent(minimalDTO.getContent());
-      field.setFieldTemplate(fieldTemplate);
+      field.setTemplateField(templateField);
 
       card.addField(field);
     }
@@ -91,53 +83,59 @@ public class CardService {
     return cardMapper.toMinimalDTO(cardRepository.save(card));
   }
 
-  @Transactional
+  @Transactional(readOnly = true)
   public ResponseDeckWithCardsDTO getDeckWithFlashCards(String deckPath) {
-    Deck deck = deckRepository.findByPath(deckPath)
-        .orElseThrow(() -> new IllegalArgumentException("Deck not found: " + deckPath));
-
+    Deck deck = deckService.findByPath(deckPath);
     List<Card> cards = cardRepository.findAllByDeck(deck);
 
     return deckWithCardsMapper.toDTO(deck, cards);
   }
 
-  @Transactional
+  @Transactional(readOnly = true)
   public CardDTO getCardById(UUID cardId) {
-    Card card = cardRepository.findByCardIdWithFieldsAndTemplateFields(cardId)
+    Card card = cardRepository.findByCardIdWithFields(cardId)
         .orElseThrow(() -> new NotFoundException("Card not found"));
-    Set<FieldDTO> fields = buildFullFields(card);
+    List<TemplateField> templateFields = templateService.findTemplateWithFields(
+        card.getTemplate().getTemplateId()).getFields();
+
+    List<FieldDTO> fields = buildFullFields(card, templateFields);
     CardDTO cardDTO = cardMapper.toDTO(card);
     cardDTO.setFieldDTOList(fields);
     return cardDTO;
   }
 
-  private Set<FieldDTO> buildFullFields(Card card) {
-    Map<UUID, Field> cardFieldsByTemplateId = card.getFields().stream()
-        .collect(Collectors.toMap(f -> f.getFieldTemplate().getFieldTemplateId(), Function.identity()));
 
-    return card.getTemplate().getFields().stream()
+  private List<FieldDTO> buildFullFields(Card card, List<TemplateField> templateFields) {
+
+    Map<UUID, Field> cardFieldsByTemplateId = card.getFields().stream()
+        .collect(
+            Collectors.toMap(f -> f.getTemplateField().getFieldTemplateId(), Function.identity()));
+
+    return templateFields.stream()
         .map(templateField -> {
           Field field = cardFieldsByTemplateId.get(templateField.getFieldTemplateId());
-          if(field != null) {
-            return fieldMapper.toDTO(field);
+          if (field != null) {
+            FieldDTO fieldDTO = fieldMapper.toDTO(field);
+            fieldDTO.setFieldTemplate(templateFieldMapper.toDTO(templateField));
+            return fieldDTO;
           } else {
             FieldDTO blank = new FieldDTO();
             blank.setContent(null);
-            blank.setFieldTemplate(fieldTemplateMapper.toDTO(templateField));
+            blank.setFieldTemplate(templateFieldMapper.toDTO(templateField));
             return blank;
           }
         })
-        .collect(Collectors.toSet());
+        .toList();
   }
 
 
   private void validateCardFields(Card card) {
     boolean hasFront = card.getFields().stream()
-        .map(Field::getFieldTemplate)
+        .map(Field::getTemplateField)
         .anyMatch(ft -> ft.getFieldRole() == FieldRole.FRONT);
 
     boolean hasBack = card.getFields().stream()
-        .map(Field::getFieldTemplate)
+        .map(Field::getTemplateField)
         .anyMatch(ft -> ft.getFieldRole() == FieldRole.BACK);
     if (!hasFront || !hasBack) {
       throw new IllegalArgumentException("Card must have at least one FRONT and one BACK field");

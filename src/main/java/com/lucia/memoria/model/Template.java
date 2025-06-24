@@ -10,18 +10,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
 import java.util.UUID;
-import org.antlr.v4.runtime.misc.OrderedHashSet;
 
 @Getter
 @Setter
@@ -31,25 +29,26 @@ import org.antlr.v4.runtime.misc.OrderedHashSet;
 @Table(name = "templates")
 public class Template {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "template_id", nullable = false, unique = true, updatable = false)
-    private UUID templateId = UUID.randomUUID();
+  @Column(name = "template_id", nullable = false, unique = true, updatable = false)
+  private UUID templateId = UUID.randomUUID();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private User owner;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", referencedColumnName = "id")
+  private User owner;
 
-    private String name;
+  private String name;
 
-    @OneToMany(mappedBy = "template", cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<FieldTemplate> fields = new OrderedHashSet<>() {
-    };
+  @OneToMany(mappedBy = "template", cascade = CascadeType.ALL)
+  @OrderColumn(name = "template_fields_order")
+  List<TemplateField> fields = new ArrayList<>() {
+  };
 
-    public void addField(FieldTemplate fieldTemplate) {
-        fields.add(fieldTemplate);
-        fieldTemplate.setTemplate(this);
-    }
+  public void addField(TemplateField templateField) {
+    fields.add(templateField);
+    templateField.setTemplate(this);
+  }
 }

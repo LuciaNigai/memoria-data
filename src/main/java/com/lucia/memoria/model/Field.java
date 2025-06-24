@@ -23,21 +23,22 @@ import java.util.UUID;
 @Entity
 @Table(name = "fields")
 public class Field {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
 
-    @Column(name = "field_id", nullable = false, unique = true, updatable = false)
-    private UUID fieldId = UUID.randomUUID();
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long Id;
 
-    private String content;
+  @Column(name = "field_id", nullable = false, unique = true, updatable = false)
+  private UUID fieldId = UUID.randomUUID();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "card_id", referencedColumnName = "id")
-    Card card;
+  private String content;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "field_template_id", referencedColumnName = "id")
-    FieldTemplate fieldTemplate;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "card_id", referencedColumnName = "id")
+  Card card;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "field_template_id", referencedColumnName = "id")
+  TemplateField templateField;
 
 }

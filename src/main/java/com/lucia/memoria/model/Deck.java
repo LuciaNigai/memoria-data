@@ -27,26 +27,27 @@ import java.util.UUID;
 @Entity
 @Table(name = "decks")
 public class Deck {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @Column(name = "deck_id", nullable = false, unique = true, updatable = false)
-    private UUID deckId = UUID.randomUUID();
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
-    private User user;
+  @Column(name = "deck_id", nullable = false, unique = true, updatable = false)
+  private UUID deckId = UUID.randomUUID();
 
-    @Column(name = "name", nullable = false)
-    private String name;
+  @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
+  private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id", referencedColumnName = "id")
-    private Deck parentDeck;
+  @Column(name = "name", nullable = false)
+  private String name;
 
-    private String path;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "parent_id", referencedColumnName = "id")
+  private Deck parentDeck;
 
-    @OneToMany(mappedBy = "deck")
-    private List<Card> cards;
+  private String path;
+
+  @OneToMany(mappedBy = "deck")
+  private List<Card> cards;
 }
