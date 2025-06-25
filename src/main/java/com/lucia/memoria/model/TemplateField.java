@@ -30,7 +30,7 @@ public class TemplateField {
   private Long id;
 
   @Column(name = "field_template_id", nullable = false, unique = true, updatable = false)
-  private UUID fieldTemplateId = UUID.randomUUID();
+  private UUID templateFieldId = UUID.randomUUID();
 
   private String name;
 

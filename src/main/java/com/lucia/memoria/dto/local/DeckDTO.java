@@ -16,8 +16,9 @@ import java.util.UUID;
 public class DeckDTO {
 
   private UUID deckId;
+  private UUID userId;
   private String name;
   private String path;
   private List<DeckDTO> childDecks;
-  private UUID userId;
+
 }

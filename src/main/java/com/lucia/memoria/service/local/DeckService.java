@@ -32,11 +32,11 @@ public class DeckService {
   }
 
   @Transactional
-  public DeckDTO saveDeck(DeckMinimalDTO dto) {
+  public DeckDTO createDeck(DeckMinimalDTO dto) {
     Deck parent = null;
     String path = dto.getPath();
 
-    User user = userService.findUserByUserId(dto.getUserId());
+    User user = userService.getUserEntityById(dto.getUserId());
 
     if (path != null && !path.isBlank()) {
       parent = deckRepository.findByPath(path)
@@ -65,20 +65,14 @@ public class DeckService {
   }
 
   @Transactional(readOnly = true)
-  public Deck findByDeckId(UUID deckId) {
+  public Deck getDeckEntityById(UUID deckId) {
     return deckRepository.findByDeckId(deckId)
         .orElseThrow(() -> new IllegalArgumentException("Wrong deck id"));
   }
 
   @Transactional(readOnly = true)
-  public Deck findByPath(String path) {
-    return deckRepository.findByPath(path)
-        .orElseThrow(() -> new IllegalArgumentException("Deck not found: " + path));
-  }
-
-  @Transactional(readOnly = true)
-  public List<DeckDTO> getUserFullDeckTree(UUID userId) {
-    User user = userService.findUserByUserId(userId);
+  public List<DeckDTO> getDecksByUserId(UUID userId) {
+    User user = userService.getUserEntityById(userId);
 
     List<Deck> allDecks = deckRepository.findAllByUser(user);
     Map<String, DeckDTO> map = new HashMap<>();

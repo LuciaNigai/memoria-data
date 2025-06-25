@@ -56,17 +56,17 @@ public class CardService {
   }
 
   @Transactional
-  public CardMinimalDTO saveCard(CardMinimalDTO cardDTO) {
-    Deck deck = deckService.findByDeckId(cardDTO.getDeckId());
-    Template template = templateService.findTemplateEntityById(cardDTO.getTemplateId());
+  public CardMinimalDTO createCard(CardMinimalDTO cardDTO) {
+    Deck deck = deckService.getDeckEntityById(cardDTO.getDeckId());
+    Template template = templateService.getTemplateEntityById(cardDTO.getTemplateId());
 
     Card card = new Card();
     card.setCardId(UUID.randomUUID());
     card.setTemplate(template);
 
     for (FieldMinimalDTO minimalDTO : cardDTO.getFieldMinimalDTOList()) {
-      TemplateField templateField = templateFieldService.findByFieldTemplateIdAndTemplate(
-          minimalDTO.getTemplateFieldId(), template);
+      TemplateField templateField = templateFieldService.findTemplateFieldById(
+          minimalDTO.getTemplateFieldId());
 
       Field field = new Field();
       field.setFieldId(UUID.randomUUID());
@@ -84,36 +84,36 @@ public class CardService {
   }
 
   @Transactional(readOnly = true)
-  public ResponseDeckWithCardsDTO getDeckWithFlashCards(String deckPath) {
-    Deck deck = deckService.findByPath(deckPath);
-    List<Card> cards = cardRepository.findAllByDeck(deck);
-
-    return deckWithCardsMapper.toDTO(deck, cards);
-  }
-
-  @Transactional(readOnly = true)
   public CardDTO getCardById(UUID cardId) {
     Card card = cardRepository.findByCardIdWithFields(cardId)
         .orElseThrow(() -> new NotFoundException("Card not found"));
-    List<TemplateField> templateFields = templateService.findTemplateWithFields(
+    List<TemplateField> templateFields = templateService.getTemplateWithFieldsById(
         card.getTemplate().getTemplateId()).getFields();
 
     List<FieldDTO> fields = buildFullFields(card, templateFields);
     CardDTO cardDTO = cardMapper.toDTO(card);
     cardDTO.setFieldDTOList(fields);
+
     return cardDTO;
   }
 
+  @Transactional(readOnly = true)
+  public ResponseDeckWithCardsDTO getDeckWithCards(UUID deckId) {
+    Deck deck = deckService.getDeckEntityById(deckId);
+    List<Card> cards = cardRepository.findAllByDeck(deck);
+
+    return deckWithCardsMapper.toDTO(deck, cards);
+  }
 
   private List<FieldDTO> buildFullFields(Card card, List<TemplateField> templateFields) {
 
     Map<UUID, Field> cardFieldsByTemplateId = card.getFields().stream()
         .collect(
-            Collectors.toMap(f -> f.getTemplateField().getFieldTemplateId(), Function.identity()));
+            Collectors.toMap(f -> f.getTemplateField().getTemplateFieldId(), Function.identity()));
 
     return templateFields.stream()
         .map(templateField -> {
-          Field field = cardFieldsByTemplateId.get(templateField.getFieldTemplateId());
+          Field field = cardFieldsByTemplateId.get(templateField.getTemplateFieldId());
           if (field != null) {
             FieldDTO fieldDTO = fieldMapper.toDTO(field);
             fieldDTO.setFieldTemplate(templateFieldMapper.toDTO(templateField));

@@ -35,7 +35,7 @@ public class TemplateService {
 
   @Transactional
   public TemplateDTO createTemplate(TemplateDTO templateDTO) {
-    User owner = userService.findUserByUserId(templateDTO.getOwnerId());
+    User owner = userService.getUserEntityById(templateDTO.getOwnerId());
 
     Optional<Template> templateExists = templateRepository.findByNameAndOwner(templateDTO.getName(),
         owner);
@@ -51,14 +51,14 @@ public class TemplateService {
 
     for (TemplateFieldDTO templateFieldDTO : templateDTO.getFields()) {
       TemplateField templateField = templateFieldMapper.toEntity(templateFieldDTO);
-      templateField.setFieldTemplateId(UUID.randomUUID());
+      templateField.setTemplateFieldId(UUID.randomUUID());
       template.addField(templateField);
     }
 
     return templateMapper.toDTO(templateRepository.save(template));
   }
 
-  public TemplateDTO findTemplateById(UUID templateId) {
+  public TemplateDTO getTemplateById(UUID templateId) {
     Optional<Template> template = templateRepository.findByTemplateId(templateId);
     if (template.isPresent()) {
       return templateMapper.toDTO(template.get());
@@ -68,7 +68,7 @@ public class TemplateService {
   }
 
 
-  public Template findTemplateEntityById(UUID templateId) {
+  public Template getTemplateEntityById(UUID templateId) {
     Optional<Template> template = templateRepository.findByTemplateId(templateId);
     if (template.isPresent()) {
       return template.get();
@@ -78,15 +78,17 @@ public class TemplateService {
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
-  public Template findTemplateWithFields(UUID templateId) {
+  public Template getTemplateWithFieldsById(UUID templateId) {
     return templateRepository.findTemplateByTemplateIdWithFields(
             templateId)
         .orElseThrow(() -> new NotFoundException("Template not found"));
   }
 
-  public List<TemplateDTO> findAllOwnerTemplates(UUID ownerID) {
-    User owner = userService.findUserByUserId(ownerID);
+  @Transactional(readOnly = true)
+  public List<TemplateDTO> getTemplatesByUserId(UUID userId) {
+    User owner = userService.getUserEntityById(userId);
 
     return templateMapper.toDTOList(templateRepository.findAllByOwner(owner));
   }
+
 }

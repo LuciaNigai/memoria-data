@@ -1,6 +1,5 @@
 package com.lucia.memoria.service.local;
 
-import com.lucia.memoria.model.Template;
 import com.lucia.memoria.model.TemplateField;
 import com.lucia.memoria.repository.TemplateFieldRepository;
 import java.util.UUID;
@@ -16,11 +15,9 @@ public class TemplateFieldService {
     this.templateFieldRepository = templateFieldRepository;
   }
 
-  public TemplateField findByFieldTemplateIdAndTemplate(UUID templateFieldId, Template template) {
-    return templateFieldRepository.findByFieldTemplateIdAndTemplate(
-            templateFieldId, template)
+  public TemplateField findTemplateFieldById(UUID templateFieldId) {
+    return templateFieldRepository.findByTemplateFieldId(templateFieldId)
         .orElseThrow(() -> new IllegalArgumentException("Target template field does not exists"));
-
   }
 
 

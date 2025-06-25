@@ -23,13 +23,13 @@ public class UserService {
   }
 
   @Transactional
-  public UserDTO saveUser(UserDTO userDTO) {
+  public UserDTO createUser(UserDTO userDTO) {
     User user = userMapper.toEntity(userDTO);
-    // Initialize fields not set from DTO, e.g. createdAt
+
     if (user.getCreatedAt() == null) {
       user.setCreatedAt(java.time.LocalDateTime.now());
     }
-    // You may want to hash password here before saving
+
     user.setUserId(UUID.randomUUID());
 
     User saved = userRepository.save(user);
@@ -37,14 +37,14 @@ public class UserService {
   }
 
   @Transactional(readOnly = true)
-  public UserDTO findByUserId(UUID userId) {
+  public UserDTO getUserById(UUID userId) {
     User user = userRepository.findByUserId(userId)
         .orElseThrow(() -> new IllegalArgumentException("User not found"));
     return userMapper.toDTO(user);
   }
 
   @Transactional(readOnly = true)
-  public User findUserByUserId(UUID userId) {
+  public User getUserEntityById(UUID userId) {
     return userRepository.findByUserId(userId)
         .orElseThrow(() -> new IllegalArgumentException("User not found"));
   }

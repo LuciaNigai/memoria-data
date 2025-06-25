@@ -25,6 +25,6 @@ public interface FieldMapper {
 
   @Named("templateFieldToTemplateFieldId")
   default UUID mapTemplateFieldToTemplateFieldId(TemplateField templateField) {
-    return templateField == null ? null : templateField.getFieldTemplateId();
+    return templateField == null ? null : templateField.getTemplateFieldId();
   }
 }
