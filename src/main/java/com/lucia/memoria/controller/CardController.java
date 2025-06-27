@@ -22,9 +22,9 @@ public class CardController {
     this.cardService = cardService;
   }
 
-  @PostMapping
-  public ResponseEntity<CardMinimalDTO> createCard(@RequestBody CardMinimalDTO cardDTO) {
-    return ResponseEntity.ok().body(cardService.createCard(cardDTO));
+  @PostMapping("/{saveDuplicate}")
+  public ResponseEntity<CardMinimalDTO> createCard(@RequestBody CardMinimalDTO cardDTO, @PathVariable boolean saveDuplicate) {
+    return ResponseEntity.ok().body(cardService.createCard(cardDTO, saveDuplicate));
   }
 
   @GetMapping("/{cardId}")

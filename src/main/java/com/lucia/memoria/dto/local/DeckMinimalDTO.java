@@ -1,5 +1,8 @@
 package com.lucia.memoria.dto.local;
 
+import com.lucia.memoria.helper.AccessLevel;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +17,10 @@ import java.util.UUID;
 public class DeckMinimalDTO {
 
   private UUID deckId;
+  @NotBlank
   private String name;
+  private AccessLevel accessLevel;
   private String path;
+  @NotNull
   private UUID userId;
 }

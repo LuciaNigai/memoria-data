@@ -16,6 +16,12 @@ public interface CardRepository extends JpaRepository<Card, Long> {
 
   @Query("SELECT c FROM Card c " +
       "LEFT JOIN FETCH c.fields f " +
+      "LEFT JOIN FETCH f.templateField tf " +
       "WHERE c.cardId = :cardId")
-  Optional<Card> findByCardIdWithFields(@Param("cardId") UUID cardId);
+  Optional<Card> findByCardIdWithFieldsAndFieldTemplates(@Param("cardId") UUID cardId);
+
+  @Query("SELECT DISTINCT c FROM Card c " +
+      "JOIN c.fields f " +
+      "WHERE f.content = :content")
+  List<Card> findByFieldContentWithFields(@Param("content") String content);
 }

@@ -1,7 +1,9 @@
 package com.lucia.memoria.model;
 
 import com.lucia.memoria.helper.FieldRole;
+import com.lucia.memoria.helper.TemplateFieldType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -22,7 +24,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "field_templates")
+@Table(name = "template_fields")
 public class TemplateField {
 
   @Id
@@ -35,6 +37,9 @@ public class TemplateField {
   private String name;
 
   private FieldRole fieldRole;
+
+  @Embedded
+  private TemplateFieldType templateFieldType;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "template_id", referencedColumnName = "id")

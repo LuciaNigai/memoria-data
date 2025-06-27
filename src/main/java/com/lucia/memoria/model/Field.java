@@ -35,10 +35,10 @@ public class Field {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "card_id", referencedColumnName = "id")
-  Card card;
+  private Card card;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "field_template_id", referencedColumnName = "id")
-  TemplateField templateField;
+  private TemplateField templateField;
 
 }

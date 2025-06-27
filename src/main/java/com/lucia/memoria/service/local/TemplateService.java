@@ -2,7 +2,9 @@ package com.lucia.memoria.service.local;
 
 import com.lucia.memoria.dto.local.TemplateFieldDTO;
 import com.lucia.memoria.dto.local.TemplateDTO;
-import com.lucia.memoria.exception.NotFoundException;
+import com.lucia.memoria.helper.FieldRole;
+import com.lucia.memoria.helper.FieldType;
+import com.lucia.memoria.helper.TemplateFieldType;
 import com.lucia.memoria.mapper.TemplateFieldMapper;
 import com.lucia.memoria.mapper.TemplateMapper;
 import com.lucia.memoria.model.TemplateField;
@@ -14,11 +16,15 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TemplateService {
+
+  private static final List<String> PARTS_OF_SPEECH = List.of(
+      "noun", "pronoun", "verb", "adjective", "adverb", "preposition", "conjunction", "interjection"
+  );
+
 
   private final TemplateRepository templateRepository;
   private final UserService userService;
@@ -41,7 +47,7 @@ public class TemplateService {
         owner);
 
     if (templateExists.isPresent()) {
-      throw new IllegalArgumentException("Template with that name already exists");
+      throw new IllegalArgumentException("Template with name " + templateDTO.getName() + " already exists");
     }
 
     Template template = new Template();
@@ -50,23 +56,46 @@ public class TemplateService {
     template.setOwner(owner);
 
     for (TemplateFieldDTO templateFieldDTO : templateDTO.getFields()) {
-      TemplateField templateField = templateFieldMapper.toEntity(templateFieldDTO);
-      templateField.setTemplateFieldId(UUID.randomUUID());
-      template.addField(templateField);
+      addTemplateField(templateFieldDTO, template);
+    }
+
+    boolean hasPOS = template.getFields().stream()
+        .anyMatch(f -> "Part of Speech".equalsIgnoreCase(f.getName()));
+    if (Boolean.TRUE.equals(templateDTO.getIncludesPartOfSpeech()) && !hasPOS) {
+      addPartOfSpeechFieldIfNeeded(templateDTO, template);
     }
 
     return templateMapper.toDTO(templateRepository.save(template));
   }
 
-  public TemplateDTO getTemplateById(UUID templateId) {
-    Optional<Template> template = templateRepository.findByTemplateId(templateId);
-    if (template.isPresent()) {
-      return templateMapper.toDTO(template.get());
-    } else {
-      throw new NoSuchElementException("Template Not found");
+  private void addTemplateField(TemplateFieldDTO templateFieldDTO, Template template) {
+    TemplateFieldType templateFieldType =
+        templateFieldDTO.getTemplateFieldType() == null ? new TemplateFieldType(FieldType.TEXT)
+            : templateFieldDTO.getTemplateFieldType();
+    TemplateField templateField = templateFieldMapper.toEntity(templateFieldDTO);
+    templateField.setTemplateFieldId(UUID.randomUUID());
+    templateField.setTemplateFieldType(templateFieldType);
+    template.addField(templateField);
+  }
+
+  private static void addPartOfSpeechFieldIfNeeded(TemplateDTO templateDTO, Template template) {
+    if (Boolean.TRUE.equals(templateDTO.getIncludesPartOfSpeech())) {
+      TemplateField templateField = new TemplateField();
+      templateField.setTemplateFieldId(UUID.randomUUID());
+      templateField.setName("Part of Speech");
+      templateField.setFieldRole(FieldRole.AUXILIARY);
+      templateField.setTemplateFieldType(new TemplateFieldType(
+          FieldType.ENUM,
+          PARTS_OF_SPEECH
+      ));
+      template.addField(templateField);
+      template.setIncludesPartOfSpeech(true);
     }
   }
 
+  public TemplateDTO getTemplateById(UUID templateId) {
+    return templateMapper.toDTO(getTemplateEntityById(templateId));
+  }
 
   public Template getTemplateEntityById(UUID templateId) {
     Optional<Template> template = templateRepository.findByTemplateId(templateId);
@@ -75,13 +104,6 @@ public class TemplateService {
     } else {
       throw new NoSuchElementException("Template Not found");
     }
-  }
-
-  @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
-  public Template getTemplateWithFieldsById(UUID templateId) {
-    return templateRepository.findTemplateByTemplateIdWithFields(
-            templateId)
-        .orElseThrow(() -> new NotFoundException("Template not found"));
   }
 
   @Transactional(readOnly = true)

@@ -1,5 +1,6 @@
 package com.lucia.memoria.model;
 
+import com.lucia.memoria.helper.AccessLevel;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,6 +42,8 @@ public class Deck {
 
   @Column(name = "name", nullable = false)
   private String name;
+
+  private AccessLevel accessLevel;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "parent_id", referencedColumnName = "id")

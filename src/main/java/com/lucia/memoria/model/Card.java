@@ -43,10 +43,10 @@ public class Card {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "template_id", referencedColumnName = "id")
-  Template template;
+  private Template template;
 
   @OneToMany(mappedBy = "card", cascade = CascadeType.ALL)
-  List<Field> fields = new ArrayList<>();
+  private List<Field> fields = new ArrayList<>();
 
   public void addField(Field field) {
     fields.add(field);

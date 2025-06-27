@@ -2,11 +2,13 @@ package com.lucia.memoria.service.local;
 
 import com.lucia.memoria.dto.local.DeckDTO;
 import com.lucia.memoria.dto.local.DeckMinimalDTO;
+import com.lucia.memoria.helper.AccessLevel;
 import com.lucia.memoria.mapper.DeckMapper;
 import com.lucia.memoria.model.Deck;
 import com.lucia.memoria.model.User;
 import com.lucia.memoria.repository.DeckRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -38,30 +40,45 @@ public class DeckService {
 
     User user = userService.getUserEntityById(dto.getUserId());
 
-    if (path != null && !path.isBlank()) {
+    if (!StringUtils.isBlank(path)) {
       parent = deckRepository.findByPath(path)
           .orElseThrow(() -> new IllegalArgumentException("Parent path was not found"));
     }
 
-    log.info("dto path {}", path);
+    log.debug("dto path {}", path);
 
     String newPath = parent == null ? dto.getName() : path + "::" + dto.getName();
 
-    log.info("dto parent {}", parent);
+    log.debug("dto parent {}", parent);
 
     if (deckRepository.findByPathAndUser(newPath, user).isPresent()) {
       throw new IllegalArgumentException("Deck with that path already exists");
     }
 
+    AccessLevel accessLevel = determineDeckAccessLevel(dto.getAccessLevel(), parent);
+
     Deck deck = new Deck();
     deck.setDeckId(UUID.randomUUID());
     deck.setParentDeck(parent);
+    deck.setAccessLevel(accessLevel);
     deck.setPath(newPath);
     deck.setName(dto.getName());
     deck.setUser(user);
 
     Deck saved = deckRepository.save(deck);
     return deckMapper.toDTO(saved);
+  }
+
+  private AccessLevel determineDeckAccessLevel(AccessLevel dtoAccessLevel, Deck parent) {
+    if (dtoAccessLevel == AccessLevel.DEFAULT) {
+      if (parent == null) {
+        return AccessLevel.PRIVATE;
+      } else {
+        return parent.getAccessLevel();
+      }
+    } else {
+      return dtoAccessLevel == null ? AccessLevel.PRIVATE : dtoAccessLevel;
+    }
   }
 
   @Transactional(readOnly = true)
@@ -91,11 +108,18 @@ public class DeckService {
         roots.add(current);
       } else {
         DeckDTO parentDTO = map.get(deck.getParentDeck().getPath());
-        parentDTO.getChildDecks().add(current);
+        if (parentDTO != null) {
+          parentDTO.getChildDecks().add(current);
+        } else {
+          log.warn("Parent deck missing for: {}", deck.getPath());
+        }
       }
     }
-
     return roots;
   }
 
+  @Transactional(readOnly = true)
+  public DeckDTO getDeckById(UUID deckID) {
+    return deckMapper.toDTO(getDeckEntityById(deckID));
+  }
 }

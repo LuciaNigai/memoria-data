@@ -36,4 +36,9 @@ public class DeckController {
   public ResponseEntity<ResponseDeckWithCardsDTO> getDeckWithCards(@PathVariable UUID deckId) {
     return ResponseEntity.ok().body(cardService.getDeckWithCards(deckId));
   }
+
+  @GetMapping("/{deckId}")
+  public ResponseEntity<DeckDTO> getDeckById(@PathVariable UUID deckId) {
+    return ResponseEntity.ok().body(deckService.getDeckById(deckId));
+  }
 }
