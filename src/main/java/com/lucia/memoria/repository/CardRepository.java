@@ -24,4 +24,6 @@ public interface CardRepository extends JpaRepository<Card, Long> {
       "JOIN c.fields f " +
       "WHERE f.content = :content")
   List<Card> findByFieldContentWithFields(@Param("content") String content);
+
+  Optional<Card> findByCardId(UUID cardId);
 }

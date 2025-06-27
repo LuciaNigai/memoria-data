@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 
 public interface DeckRepository extends JpaRepository<Deck, Long> {
@@ -18,4 +20,8 @@ public interface DeckRepository extends JpaRepository<Deck, Long> {
   List<Deck> findAllByUser(User user);
 
   Optional<Deck> findByDeckId(UUID deckId);
+
+  @Query("SELECT d FROM Deck d LEFT JOIN FETCH d.cards WHERE d.deckId = :deckId")
+  Optional<Deck> findByDeckIdWithCards(@Param("deckId") UUID deckId);
+
 }

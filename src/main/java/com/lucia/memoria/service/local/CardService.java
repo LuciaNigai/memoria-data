@@ -22,6 +22,7 @@ import com.lucia.memoria.model.Template;
 import com.lucia.memoria.repository.CardRepository;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -113,6 +114,12 @@ public class CardService {
     List<Card> cards = cardRepository.findAllByDeck(deck);
 
     return deckWithCardsMapper.toDTO(deck, cards);
+  }
+
+  @Transactional
+  public void deleteCard(UUID cardId) {
+    Card card = cardRepository.findByCardId(cardId).orElseThrow(() -> new NotFoundException("The card not found"));
+    cardRepository.delete(card);
   }
 
   private List<FieldDTO> buildFullFields(Card card, List<TemplateField> templateFields) {

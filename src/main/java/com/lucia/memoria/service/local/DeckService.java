@@ -2,6 +2,8 @@ package com.lucia.memoria.service.local;
 
 import com.lucia.memoria.dto.local.DeckDTO;
 import com.lucia.memoria.dto.local.DeckMinimalDTO;
+import com.lucia.memoria.exception.ConfirmationException;
+import com.lucia.memoria.exception.NotFoundException;
 import com.lucia.memoria.helper.AccessLevel;
 import com.lucia.memoria.mapper.DeckMapper;
 import com.lucia.memoria.model.Deck;
@@ -84,7 +86,7 @@ public class DeckService {
   @Transactional(readOnly = true)
   public Deck getDeckEntityById(UUID deckId) {
     return deckRepository.findByDeckId(deckId)
-        .orElseThrow(() -> new IllegalArgumentException("Wrong deck id"));
+        .orElseThrow(() -> new IllegalArgumentException("Deck not found."));
   }
 
   @Transactional(readOnly = true)
@@ -121,5 +123,15 @@ public class DeckService {
   @Transactional(readOnly = true)
   public DeckDTO getDeckById(UUID deckID) {
     return deckMapper.toDTO(getDeckEntityById(deckID));
+  }
+
+  public void deleteDeck(UUID deckId, boolean force) {
+    Deck deck = deckRepository.findByDeckIdWithCards(deckId)
+        .orElseThrow(() -> new NotFoundException("Deck you are trying to delete doe not exist"));
+    if(!deck.getCards().isEmpty() && !force) {
+        throw new ConfirmationException("This deck contains cards, are you sure you want to delete it?");
+    }
+
+    deckRepository.delete(deck);
   }
 }

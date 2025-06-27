@@ -36,7 +36,7 @@ public class Deck {
   @Column(name = "deck_id", nullable = false, unique = true, updatable = false)
   private UUID deckId = UUID.randomUUID();
 
-  @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
   private User user;
 
@@ -51,6 +51,6 @@ public class Deck {
 
   private String path;
 
-  @OneToMany(mappedBy = "deck")
+  @OneToMany(mappedBy = "deck", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Card> cards;
 }
