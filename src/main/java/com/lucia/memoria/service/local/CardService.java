@@ -22,7 +22,6 @@ import com.lucia.memoria.model.Template;
 import com.lucia.memoria.repository.CardRepository;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;

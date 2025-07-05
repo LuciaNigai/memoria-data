@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("cards")
+@RequestMapping("/api/data/cards")
 public class CardController {
 
   private final CardService cardService;
@@ -32,12 +32,12 @@ public class CardController {
   }
 
   @GetMapping("/{cardId}")
-  public ResponseEntity<CardDTO> getCardById(@PathVariable UUID cardId) {
+  public ResponseEntity<CardDTO> getCardById(@PathVariable("cardId") UUID cardId) {
     return ResponseEntity.ok().body(cardService.getCardById(cardId));
   }
 
   @DeleteMapping("/{cardId}")
-  public ResponseEntity<GeneralResponseDTO> deleteCard(@PathVariable UUID cardId) {
+  public ResponseEntity<GeneralResponseDTO> deleteCard(@PathVariable("cardId") UUID cardId) {
     cardService.deleteCard(cardId);
     return ResponseEntity.ok().body(new GeneralResponseDTO("Card deleted succesfully.", HttpStatus.OK));
   }

@@ -19,7 +19,7 @@ import java.util.UUID;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("users")
+@RequestMapping("/api/data/users")
 public class UserController {
 
   private final UserService userService;
@@ -40,7 +40,7 @@ public class UserController {
   }
 
   @GetMapping("/{userId}")
-  public ResponseEntity<UserDTO> getUserById(@PathVariable UUID userId) {
+  public ResponseEntity<UserDTO> getUserById(@PathVariable("userId") UUID userId) {
     UserDTO user = userService.getUserById(userId);
     return ResponseEntity.ok(user);
   }
@@ -52,12 +52,12 @@ public class UserController {
   }
 
   @GetMapping("/{userId}/templates")
-  public ResponseEntity<List<TemplateDTO>> getUserTemplates(@PathVariable UUID userId) {
+  public ResponseEntity<List<TemplateDTO>> getUserTemplates(@PathVariable("userId") UUID userId) {
     return ResponseEntity.ok().body(templateService.getTemplatesByUserId(userId));
   }
 
   @GetMapping("/{userId}/decks")
-  public ResponseEntity<List<DeckDTO>> getUserDecks(@PathVariable UUID userId) {
+  public ResponseEntity<List<DeckDTO>> getUserDecks(@PathVariable("userId") UUID userId) {
     return ResponseEntity.ok().body(deckService.getDecksByUserId(userId));
   }
 }

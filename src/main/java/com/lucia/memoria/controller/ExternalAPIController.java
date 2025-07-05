@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 @RestController
-@RequestMapping("/search")
+@RequestMapping("/api/data/search")
 public class ExternalAPIController {
 
   private final FreeDictionaryAPIService freeDictionaryAPIService;

@@ -18,8 +18,8 @@ FROM openjdk:21
 WORKDIR /app
 
 # Copy the JAR from the builder stage
-COPY --from=builder /app/target/memoria-0.0.1-SNAPSHOT.jar /app/app.jar
+COPY --from=builder /app/target/memoria-data-0.0.1-SNAPSHOT.jar /app/app.jar
 
 # Expose the port and run the application
-EXPOSE 8080
+EXPOSE 8082
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

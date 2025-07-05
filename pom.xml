@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.lucia</groupId>
-	<artifactId>memoria</artifactId>
+	<artifactId>memoria-data</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>memoria</name>
+	<name>memoria-data</name>
 	<description>Project in Spring Boot </description>
 	<url/>
 	<licenses>

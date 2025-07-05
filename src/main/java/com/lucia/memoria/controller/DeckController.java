@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("decks")
+@RequestMapping("/api/data/decks")
 public class DeckController {
 
   private final DeckService deckService;
@@ -37,17 +37,17 @@ public class DeckController {
   }
 
   @GetMapping("/{deckId}/cards")
-  public ResponseEntity<ResponseDeckWithCardsDTO> getDeckWithCards(@PathVariable UUID deckId) {
+  public ResponseEntity<ResponseDeckWithCardsDTO> getDeckWithCards(@PathVariable("deckId") UUID deckId) {
     return ResponseEntity.ok().body(cardService.getDeckWithCards(deckId));
   }
 
   @GetMapping("/{deckId}")
-  public ResponseEntity<DeckDTO> getDeckById(@PathVariable UUID deckId) {
+  public ResponseEntity<DeckDTO> getDeckById(@PathVariable("deckId") UUID deckId) {
     return ResponseEntity.ok().body(deckService.getDeckById(deckId));
   }
 
   @DeleteMapping("/{deckId}")
-  public ResponseEntity<GeneralResponseDTO> deleteDeck(@PathVariable UUID deckId,
+  public ResponseEntity<GeneralResponseDTO> deleteDeck(@PathVariable("deckId") UUID deckId,
       @RequestParam(defaultValue = "false") boolean force) {
     deckService.deleteDeck(deckId, force);
     return ResponseEntity.ok()
