@@ -53,4 +53,14 @@ public class Deck {
 
   @OneToMany(mappedBy = "deck", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Card> cards;
+
+  public Deck(UUID deckId, User user, String name, AccessLevel accessLevel, Deck parentDeck,
+      String path) {
+    this.deckId = deckId;
+    this.user = user;
+    this.name = name;
+    this.accessLevel = accessLevel;
+    this.parentDeck = parentDeck;
+    this.path = path;
+  }
 }

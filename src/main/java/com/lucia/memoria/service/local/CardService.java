@@ -21,7 +21,11 @@ import com.lucia.memoria.model.TemplateField;
 import com.lucia.memoria.model.Template;
 import com.lucia.memoria.repository.CardRepository;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -68,35 +72,24 @@ public class CardService {
     card.setCardId(UUID.randomUUID());
     card.setTemplate(template);
 
-    for (FieldMinimalDTO minimalDTO : cardDTO.getFieldMinimalDTOList()) {
-      TemplateField templateField = templateFieldService.findTemplateFieldById(
-          minimalDTO.getTemplateFieldId());
-
-      Field field = new Field();
-      field.setFieldId(UUID.randomUUID());
-
-      setCardContent(minimalDTO, templateField.getTemplateFieldType(), field, saveDuplicate);
-
-      field.setTemplateField(templateField);
-
-      card.addField(field);
-    }
+    Optional.ofNullable(cardDTO.getFieldMinimalDTOList())
+        .orElse(Collections.emptyList())
+        .forEach(minimalDTO -> addCardField(saveDuplicate, minimalDTO, card));
 
     validateCardFields(card);
-
     card.setDeck(deck);
 
-    return cardMapper.toMinimalDTO(cardRepository.save(card));
+    Card savedCard = cardRepository.save(card);
+
+    return cardMapper.toMinimalDTO(savedCard);
   }
 
   @Transactional(readOnly = true)
   public CardDTO getCardById(UUID cardId) {
-    if (cardId == null) {
-      throw new IllegalArgumentException("Wrong card Id");
-    }
+    Objects.requireNonNull(cardId, "cardId must not be null");
 
     Card card = cardRepository.findByCardIdWithFieldsAndFieldTemplates(cardId)
-        .orElseThrow(() -> new NotFoundException("Card not found"));
+        .orElseThrow(() -> new NotFoundException("Invalid card ID provided."));
     List<TemplateField> templateFields = card.getFields().stream().map(Field::getTemplateField)
         .toList();
 
@@ -117,31 +110,45 @@ public class CardService {
 
   @Transactional
   public void deleteCard(UUID cardId) {
-    Card card = cardRepository.findByCardId(cardId).orElseThrow(() -> new NotFoundException("The card not found"));
+    Card card = cardRepository.findByCardId(cardId)
+        .orElseThrow(() -> new NotFoundException("The card not found"));
     cardRepository.delete(card);
   }
 
   private List<FieldDTO> buildFullFields(Card card, List<TemplateField> templateFields) {
-
     Map<UUID, Field> cardFieldsByTemplateId = card.getFields().stream()
         .collect(
             Collectors.toMap(f -> f.getTemplateField().getTemplateFieldId(), Function.identity()));
 
     return templateFields.stream()
-        .map(templateField -> {
-          Field field = cardFieldsByTemplateId.get(templateField.getTemplateFieldId());
-          if (field != null) {
-            FieldDTO fieldDTO = fieldMapper.toDTO(field);
-            fieldDTO.setFieldTemplate(templateFieldMapper.toDTO(templateField));
-            return fieldDTO;
-          } else {
-            FieldDTO blank = new FieldDTO();
-            blank.setContent(null);
-            blank.setFieldTemplate(templateFieldMapper.toDTO(templateField));
-            return blank;
-          }
-        })
+        .map(templateField -> convertOrCreateBlankFieldDTO(templateField, cardFieldsByTemplateId))
         .toList();
+  }
+
+  private void addCardField(boolean saveDuplicate, FieldMinimalDTO minimalDTO, Card card) {
+    TemplateField templateField = templateFieldService.findTemplateFieldById(
+        minimalDTO.getTemplateFieldId());
+
+    Field field = new Field();
+    field.setFieldId(UUID.randomUUID());
+
+    setCardContent(minimalDTO, templateField.getTemplateFieldType(), field, saveDuplicate);
+
+    field.setTemplateField(templateField);
+
+    card.addField(field);
+  }
+
+  private FieldDTO convertOrCreateBlankFieldDTO(TemplateField templateField,
+      Map<UUID, Field> cardFieldsByTemplateId) {
+    Field field = cardFieldsByTemplateId.get(templateField.getTemplateFieldId());
+    return Optional.ofNullable(field)
+        .map(f -> {
+          FieldDTO fieldDTO = fieldMapper.toDTO(f);
+          fieldDTO.setFieldTemplate(templateFieldMapper.toDTO(templateField));
+          return fieldDTO;
+        })
+        .orElse(FieldDTO.blankWithTemplate(templateFieldMapper.toDTO(templateField)));
   }
 
   private void setCardContent(FieldMinimalDTO minimalDTO,
@@ -165,31 +172,25 @@ public class CardService {
       }
       return;
     }
-    List<Card> duplicate = cardRepository.findByFieldContentWithFields(minimalDTO.getContent());
-    if (!duplicate.isEmpty()) {
-      if (saveDuplicate) {
-        field.setContent(minimalDTO.getContent());
-      } else {
-        throw new DuplicateException(
-            "The card with such field " + minimalDTO.getContent()
-                + " already exists. Are you sure you want to save it?",
-            new ArrayList<>(cardMapper.toMinimalDTOList(duplicate))
-        );
-      }
-    } else {
-      field.setContent(minimalDTO.getContent());
+    List<Card> duplicates = cardRepository.findByFieldContentWithFields(minimalDTO.getContent());
+    if (!duplicates.isEmpty() && !saveDuplicate) {
+      throw new DuplicateException(
+          "The card with such field " + minimalDTO.getContent()
+              + " already exists. Are you sure you want to save it?",
+          new ArrayList<>(cardMapper.toMinimalDTOList(duplicates))
+      );
     }
+
+    field.setContent(minimalDTO.getContent());
   }
 
   private void validateCardFields(Card card) {
-    boolean hasFront = card.getFields().stream()
+    Set<FieldRole> roles = card.getFields().stream()
         .map(Field::getTemplateField)
-        .anyMatch(ft -> ft.getFieldRole() == FieldRole.FRONT);
+        .map(TemplateField::getFieldRole)
+        .collect(Collectors.toSet());
 
-    boolean hasBack = card.getFields().stream()
-        .map(Field::getTemplateField)
-        .anyMatch(ft -> ft.getFieldRole() == FieldRole.BACK);
-    if (!hasFront || !hasBack) {
+    if (!roles.contains(FieldRole.FRONT) || !roles.contains(FieldRole.BACK)) {
       throw new IllegalArgumentException("Card must have at least one FRONT and one BACK field");
     }
   }

@@ -16,4 +16,11 @@ public class FieldDTO {
   TemplateFieldDTO fieldTemplate;
   private UUID fieldId;
   String content;
+
+  public static FieldDTO blankWithTemplate(TemplateFieldDTO templateFieldDTO) {
+    FieldDTO dto = new FieldDTO();
+    dto.setContent(null);
+    dto.setFieldTemplate(templateFieldDTO);
+    return dto;
+  }
 }

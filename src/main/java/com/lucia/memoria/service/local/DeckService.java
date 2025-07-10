@@ -9,6 +9,7 @@ import com.lucia.memoria.mapper.DeckMapper;
 import com.lucia.memoria.model.Deck;
 import com.lucia.memoria.model.User;
 import com.lucia.memoria.repository.DeckRepository;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -44,29 +45,21 @@ public class DeckService {
 
     if (!StringUtils.isBlank(path)) {
       parent = deckRepository.findByPath(path)
-          .orElseThrow(() -> new IllegalArgumentException("Parent path was not found"));
+          .orElseThrow(() -> new NotFoundException("Parent path was not found"));
     }
 
-    log.debug("dto path {}", path);
+    String dtoName = Optional.ofNullable(dto.getName())
+        .orElseThrow(() -> new IllegalArgumentException("The deck name cannot be empty"));
 
-    String newPath = parent == null ? dto.getName() : path + "::" + dto.getName();
-
-    log.debug("dto parent {}", parent);
+    String newPath = parent == null ? dtoName : path + "::" + dtoName;
 
     if (deckRepository.findByPathAndUser(newPath, user).isPresent()) {
-      throw new IllegalArgumentException("Deck with that path already exists");
+      throw new IllegalArgumentException("Deck already exists");
     }
 
     AccessLevel accessLevel = determineDeckAccessLevel(dto.getAccessLevel(), parent);
 
-    Deck deck = new Deck();
-    deck.setDeckId(UUID.randomUUID());
-    deck.setParentDeck(parent);
-    deck.setAccessLevel(accessLevel);
-    deck.setPath(newPath);
-    deck.setName(dto.getName());
-    deck.setUser(user);
-
+    Deck deck = new Deck(UUID.randomUUID(), user, dtoName, accessLevel, parent, newPath);
     Deck saved = deckRepository.save(deck);
     return deckMapper.toDTO(saved);
   }
@@ -86,7 +79,7 @@ public class DeckService {
   @Transactional(readOnly = true)
   public Deck getDeckEntityById(UUID deckId) {
     return deckRepository.findByDeckId(deckId)
-        .orElseThrow(() -> new IllegalArgumentException("Deck not found."));
+        .orElseThrow(() -> new NotFoundException("Deck not found."));
   }
 
   @Transactional(readOnly = true)
@@ -97,39 +90,52 @@ public class DeckService {
     Map<String, DeckDTO> map = new HashMap<>();
 
     for (Deck deck : allDecks) {
+      String path = deck.getPath();
+      if (path == null) {
+        log.warn("Deck with null path found: {}", deck.getDeckId());
+        continue;
+      }
       DeckDTO dto = deckMapper.toDTO(deck);
       dto.setChildDecks(new ArrayList<>());
-      map.put(deck.getPath(), dto);
+      map.put(path, dto);
     }
 
     List<DeckDTO> roots = new ArrayList<>();
 
     for (Deck deck : allDecks) {
-      DeckDTO current = map.get(deck.getPath());
-      if (deck.getParentDeck() == null) {
-        roots.add(current);
+      String path = deck.getPath();
+      DeckDTO currentDTO = map.get(path);
+      Deck parentDeck = deck.getParentDeck();
+
+      if (parentDeck == null || parentDeck.getPath() == null) {
+        roots.add(currentDTO);
       } else {
-        DeckDTO parentDTO = map.get(deck.getParentDeck().getPath());
+        DeckDTO parentDTO = map.get(parentDeck.getPath());
         if (parentDTO != null) {
-          parentDTO.getChildDecks().add(current);
+          parentDTO.getChildDecks().add(currentDTO);
         } else {
-          log.warn("Parent deck missing for: {}", deck.getPath());
+          log.warn("Parent deck missing for: {}", path);
+          roots.add(currentDTO);
         }
       }
     }
+
     return roots;
   }
+
 
   @Transactional(readOnly = true)
   public DeckDTO getDeckById(UUID deckID) {
     return deckMapper.toDTO(getDeckEntityById(deckID));
   }
 
+  @Transactional
   public void deleteDeck(UUID deckId, boolean force) {
     Deck deck = deckRepository.findByDeckIdWithCards(deckId)
-        .orElseThrow(() -> new NotFoundException("Deck you are trying to delete doe not exist"));
-    if(!deck.getCards().isEmpty() && !force) {
-        throw new ConfirmationException("This deck contains cards, are you sure you want to delete it?");
+        .orElseThrow(() -> new NotFoundException("Deck you are trying to delete does not exist"));
+    if (!deck.getCards().isEmpty() && !force) {
+      throw new ConfirmationException(
+          "This deck contains cards, are you sure you want to delete it?");
     }
 
     deckRepository.delete(deck);
