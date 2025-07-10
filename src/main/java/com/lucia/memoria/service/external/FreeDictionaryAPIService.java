@@ -16,7 +16,7 @@ public class FreeDictionaryAPIService {
 
   public FreeDictionaryAPIService(WebClient.Builder webClientBuilder,
       ExternalAPIConfig externalAPIConfig) {
-    this.webClient = webClientBuilder.baseUrl(externalAPIConfig.getFreeDictionaryUrl()).build();
+    this.webClient = webClientBuilder.baseUrl(externalAPIConfig.getFreeDictionary()).build();
   }
 
   public Mono<List<ResponseDTO>> callExternalApi(String word) {

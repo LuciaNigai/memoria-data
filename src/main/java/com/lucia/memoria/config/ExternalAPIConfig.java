@@ -1,20 +1,15 @@
 package com.lucia.memoria.config;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
-@Configuration
+@Component
+@Getter
+@Setter
+@ConfigurationProperties(prefix = "api")
 public class ExternalAPIConfig {
-    @Value("${FREE_DICTIONARY_API}")
-    private  String freeDictionaryUrl;
-    @Value("${GOOGLE_TRANSLATE_API}")
+    private  String freeDictionary;
     private  String googleTranslate;
-
-    public String getFreeDictionaryUrl() {
-        return freeDictionaryUrl;
-    }
-
-    public String getGoogleTranslate() {
-        return googleTranslate;
-    }
 }

@@ -26,7 +26,7 @@ public class DotenvPostProcessor implements EnvironmentPostProcessor {
     // Load dev.env or .env depending on profile
     Dotenv dotenv = Dotenv.configure()
         .directory("../")
-        .filename(isDev ? "dev.env" : ".env")
+        .filename(isDev ? ".env.data.dev" : ".env.data")
         .ignoreIfMissing()
         .load();
 

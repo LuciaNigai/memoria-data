@@ -26,14 +26,14 @@ public class ExternalAPIController {
   }
 
   @GetMapping("/meaning/{word}")
-  public Mono<ResponseEntity<List<ResponseDTO>>> getWordMeaning(@PathVariable String word) {
+  public Mono<ResponseEntity<List<ResponseDTO>>> getWordMeaning(@PathVariable("word") String word) {
     return freeDictionaryAPIService.callExternalApi(word)
         .map(ResponseEntity::ok);
   }
 
   @GetMapping("/translation/{source}/{target}/{word}")
-  public Mono<ResponseEntity<String>> getWordMeaning(@PathVariable String source,
-      @PathVariable String target, @PathVariable String word) {
+  public Mono<ResponseEntity<String>> getWordMeaning(@PathVariable("source") String source,
+      @PathVariable("target") String target, @PathVariable("word") String word) {
     return googleAPIService.callExternalApi(source, target, word)
         .map(ResponseEntity::ok);
   }
