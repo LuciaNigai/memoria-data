@@ -27,7 +27,7 @@ public class CardController {
   }
 
   @PostMapping
-  public ResponseEntity<CardMinimalDTO> createCard(@RequestBody CardMinimalDTO cardDTO, @RequestParam(defaultValue = "false") boolean saveDuplicate) {
+  public ResponseEntity<CardMinimalDTO> createCard(@RequestBody CardMinimalDTO cardDTO, @RequestParam(name = "saveDuplicate", defaultValue = "false") boolean saveDuplicate) {
     return ResponseEntity.ok().body(cardService.createCard(cardDTO, saveDuplicate));
   }
 

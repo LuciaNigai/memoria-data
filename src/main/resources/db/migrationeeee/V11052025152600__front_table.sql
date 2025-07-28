@@ -1,6 +1,0 @@
-CREATE TABLE IF NOT EXISTS front(
-    front_id BIGSERIAL PRIMARY KEY,
-    content VARCHAR(2000) UNIQUE NOT NULL,
-    card_id BIGINT NOT NULL,
-    CONSTRAINT front_card_fk FOREIGN KEY (card_id) REFERENCES cards(card_id) ON DELETE CASCADE
-);

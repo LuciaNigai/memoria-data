@@ -1,8 +1,0 @@
-CREATE TABLE IF NOT EXISTS card_types(
-    type_id BIGSERIAL PRIMARY KEY,
-    type VARCHAR(100) NOT NULL
-);
-
-INSERT INTO card_types(type)
-VALUES('FRONT'),
-('FRONT_BACK');

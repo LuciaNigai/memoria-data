@@ -16,8 +16,4 @@ public class UserDTO {
 
   private UUID userId;
   private String username;
-  private String password;
-  private String email;
-  private LocalDateTime createdAt;
-  private LocalDateTime lastLogin;
 }

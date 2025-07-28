@@ -36,18 +36,6 @@ public class User {
   @Column(name = "username", nullable = false)
   private String username;
 
-  @Column(name = "email", unique = true, nullable = false)
-  private String email;
-
-  @Column(name = "password", nullable = false)
-  private String password;
-
-  @Column(name = "created_at", nullable = false)
-  private LocalDateTime createdAt;
-
-  @Column(name = "last_login")
-  private LocalDateTime lastLogin;
-
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private List<Deck> decks;
 }

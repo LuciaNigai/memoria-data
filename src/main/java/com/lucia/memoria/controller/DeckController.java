@@ -48,7 +48,7 @@ public class DeckController {
 
   @DeleteMapping("/{deckId}")
   public ResponseEntity<GeneralResponseDTO> deleteDeck(@PathVariable("deckId") UUID deckId,
-      @RequestParam(defaultValue = "false") boolean force) {
+      @RequestParam(name = "force", defaultValue = "false") boolean force) {
     deckService.deleteDeck(deckId, force);
     return ResponseEntity.ok()
         .body(new GeneralResponseDTO("Deck successfully deleted", HttpStatus.OK));

@@ -25,11 +25,6 @@ public class UserService {
   @Transactional
   public UserDTO createUser(UserDTO userDTO) {
     User user = userMapper.toEntity(userDTO);
-
-    if (user.getCreatedAt() == null) {
-      user.setCreatedAt(java.time.LocalDateTime.now());
-    }
-
     user.setUserId(UUID.randomUUID());
 
     User saved = userRepository.save(user);
