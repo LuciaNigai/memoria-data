@@ -2,6 +2,7 @@ package com.lucia.memoria.service.local;
 
 import com.lucia.memoria.dto.local.TemplateFieldDTO;
 import com.lucia.memoria.dto.local.TemplateDTO;
+import com.lucia.memoria.exception.NotFoundException;
 import com.lucia.memoria.helper.FieldRole;
 import com.lucia.memoria.helper.FieldType;
 import com.lucia.memoria.helper.TemplateFieldType;
@@ -102,7 +103,7 @@ public class TemplateService {
     if (template.isPresent()) {
       return template.get();
     } else {
-      throw new NoSuchElementException("Template Not found");
+      throw new NotFoundException("Template Not found");
     }
   }
 
