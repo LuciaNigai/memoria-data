@@ -3,7 +3,6 @@ package com.lucia.memoria.integration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.lucia.memoria.dto.local.CardMinimalDTO;
 import com.lucia.memoria.exception.NotFoundException;
 import com.lucia.memoria.model.Deck;
 import com.lucia.memoria.model.Template;

@@ -1,21 +1,29 @@
 package com.lucia.memoria.service.local;
 
+import com.lucia.memoria.dto.local.CardDTO;
+import com.lucia.memoria.dto.local.CardMinimalDTO;
+import com.lucia.memoria.dto.local.ResponseWithListDTO;
 import com.lucia.memoria.dto.local.TemplateFieldDTO;
 import com.lucia.memoria.dto.local.TemplateDTO;
 import com.lucia.memoria.exception.NotFoundException;
 import com.lucia.memoria.helper.FieldRole;
 import com.lucia.memoria.helper.FieldType;
 import com.lucia.memoria.helper.TemplateFieldType;
+import com.lucia.memoria.mapper.CardMapper;
 import com.lucia.memoria.mapper.TemplateFieldMapper;
 import com.lucia.memoria.mapper.TemplateMapper;
+import com.lucia.memoria.model.Card;
+import com.lucia.memoria.model.Field;
 import com.lucia.memoria.model.TemplateField;
 import com.lucia.memoria.model.Template;
 import com.lucia.memoria.model.User;
+import com.lucia.memoria.repository.CardRepository;
 import com.lucia.memoria.repository.TemplateRepository;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,16 +36,24 @@ public class TemplateService {
 
 
   private final TemplateRepository templateRepository;
+  private final CardRepository cardRepository;
   private final UserService userService;
+  private final TemplateFieldService templateFieldService;
   private final TemplateFieldMapper templateFieldMapper;
   private final TemplateMapper templateMapper;
+  private final CardMapper cardMapper;
 
-  public TemplateService(TemplateRepository templateRepository, UserService userService,
-      TemplateFieldMapper templateFieldMapper, TemplateMapper templateMapper) {
+  public TemplateService(TemplateRepository templateRepository, CardRepository cardRepository,
+      UserService userService, TemplateFieldService templateFieldService,
+      TemplateFieldMapper templateFieldMapper, TemplateMapper templateMapper,
+      CardMapper cardMapper) {
     this.templateRepository = templateRepository;
+    this.cardRepository = cardRepository;
     this.userService = userService;
+    this.templateFieldService = templateFieldService;
     this.templateFieldMapper = templateFieldMapper;
     this.templateMapper = templateMapper;
+    this.cardMapper = cardMapper;
   }
 
   @Transactional
@@ -48,7 +64,8 @@ public class TemplateService {
         owner);
 
     if (templateExists.isPresent()) {
-      throw new IllegalArgumentException("Template with name " + templateDTO.getName() + " already exists");
+      throw new IllegalArgumentException(
+          "Template with name " + templateDTO.getName() + " already exists");
     }
 
     Template template = new Template();
@@ -94,6 +111,7 @@ public class TemplateService {
     }
   }
 
+  @Transactional(readOnly = true)
   public TemplateDTO getTemplateById(UUID templateId) {
     return templateMapper.toDTO(getTemplateEntityById(templateId));
   }
@@ -112,6 +130,36 @@ public class TemplateService {
     User owner = userService.getUserEntityById(userId);
 
     return templateMapper.toDTOList(templateRepository.findAllByOwner(owner));
+  }
+
+  @Transactional
+  public ResponseWithListDTO<?> deleteTemplate(UUID templateId) {
+    Template template = templateRepository.findTemplateByTemplateIdWithFields(templateId)
+        .orElse(null);
+    if (template == null) {
+      return new ResponseWithListDTO<Object>(
+          "Template you are trying to delete does not exist",
+          HttpStatus.NOT_FOUND,
+          new ArrayList<>()
+      );
+    }
+
+    List<Card> templateCards = cardRepository.findByTemplate(template);
+    if (!templateCards.isEmpty()) {
+      return new ResponseWithListDTO<CardMinimalDTO>(
+          "Template cannot be deleted. There are still cards that use that template.",
+          HttpStatus.CONFLICT,
+          cardMapper.toMinimalDTOList(templateCards)
+      );
+    }
+
+    for (TemplateField templateField : template.getFields()) {
+      templateFieldService.deleteTemplateField(templateField);
+    }
+
+    templateRepository.delete(template);
+    return new ResponseWithListDTO<Object>("Template Successfully deleted", HttpStatus.OK,
+        new ArrayList<>());
   }
 
 }

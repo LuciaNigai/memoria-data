@@ -22,4 +22,5 @@ public interface TemplateRepository extends JpaRepository<Template, Long> {
           WHERE t.templateId = :templateId
       """)
   Optional<Template> findTemplateByTemplateIdWithFields(UUID templateId);
+
 }

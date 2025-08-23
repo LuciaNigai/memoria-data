@@ -20,4 +20,8 @@ public class TemplateFieldService {
         .orElseThrow(() -> new IllegalArgumentException("Target template field does not exists"));
   }
 
+  public void deleteTemplateField(TemplateField templateField) {
+    templateFieldRepository.delete(templateField);
+  }
+
 }

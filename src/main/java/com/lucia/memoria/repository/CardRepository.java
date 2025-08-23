@@ -2,6 +2,7 @@ package com.lucia.memoria.repository;
 
 import com.lucia.memoria.model.Card;
 import com.lucia.memoria.model.Deck;
+import com.lucia.memoria.model.Template;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,4 +27,6 @@ public interface CardRepository extends JpaRepository<Card, Long> {
   List<Card> findByFieldContentWithFields(@Param("content") String content);
 
   Optional<Card> findByCardId(UUID cardId);
+
+  List<Card> findByTemplate(Template template);
 }
