@@ -2,7 +2,7 @@ package com.lucia.memoria.service.local;
 
 import com.lucia.memoria.dto.local.DeckDTO;
 import com.lucia.memoria.dto.local.DeckMinimalDTO;
-import com.lucia.memoria.exception.ConfirmationException;
+import com.lucia.memoria.exception.ConflictWithDataException;
 import com.lucia.memoria.exception.NotFoundException;
 import com.lucia.memoria.helper.AccessLevel;
 import com.lucia.memoria.mapper.DeckMapper;
@@ -61,19 +61,8 @@ public class DeckService {
 
     Deck deck = new Deck(UUID.randomUUID(), user, dtoName, accessLevel, parent, newPath);
     Deck saved = deckRepository.save(deck);
+    log.info("Deck saved {}", saved);
     return deckMapper.toDTO(saved);
-  }
-
-  private AccessLevel determineDeckAccessLevel(AccessLevel dtoAccessLevel, Deck parent) {
-    if (dtoAccessLevel == AccessLevel.DEFAULT) {
-      if (parent == null) {
-        return AccessLevel.PRIVATE;
-      } else {
-        return parent.getAccessLevel();
-      }
-    } else {
-      return dtoAccessLevel == null ? AccessLevel.PRIVATE : dtoAccessLevel;
-    }
   }
 
   @Transactional(readOnly = true)
@@ -131,13 +120,26 @@ public class DeckService {
 
   @Transactional
   public void deleteDeck(UUID deckId, boolean force) {
-    Deck deck = deckRepository.findByDeckIdWithCards(deckId)
-        .orElseThrow(() -> new NotFoundException("Deck you are trying to delete does not exist"));
+    Deck deck = deckRepository.findByDeckIdWithCards(deckId).orElseThrow(
+        () -> new NotFoundException("Deck you are trying to delete does not exist")
+    );
     if (!deck.getCards().isEmpty() && !force) {
-      throw new ConfirmationException(
-          "This deck contains cards, are you sure you want to delete it?");
+      throw  new ConflictWithDataException("This deck contains cards, are you sure you want to delete it?", deck.getCards());
     }
 
     deckRepository.delete(deck);
+  }
+
+
+  private AccessLevel determineDeckAccessLevel(AccessLevel dtoAccessLevel, Deck parent) {
+    if (dtoAccessLevel == AccessLevel.DEFAULT) {
+      if (parent == null) {
+        return AccessLevel.PRIVATE;
+      } else {
+        return parent.getAccessLevel();
+      }
+    } else {
+      return dtoAccessLevel == null ? AccessLevel.PRIVATE : dtoAccessLevel;
+    }
   }
 }

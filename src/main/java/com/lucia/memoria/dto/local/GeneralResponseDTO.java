@@ -1,7 +1,21 @@
 package com.lucia.memoria.dto.local;
 
-import org.springframework.http.HttpStatus;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-public record GeneralResponseDTO(String message, HttpStatus status) {
+@AllArgsConstructor
+@Getter
+@Setter
+public class GeneralResponseDTO<T> {
+  private String message;
+  private T data;
 
+  public GeneralResponseDTO(String message) {
+    this.message=message;
+  }
+
+  public GeneralResponseDTO(T data) {
+    this.data=data;
+  }
 }

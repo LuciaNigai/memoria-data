@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface TemplateRepository extends JpaRepository<Template, Long> {
 
@@ -21,6 +22,6 @@ public interface TemplateRepository extends JpaRepository<Template, Long> {
           JOIN FETCH t.fields
           WHERE t.templateId = :templateId
       """)
-  Optional<Template> findTemplateByTemplateIdWithFields(UUID templateId);
+  Optional<Template> findTemplateByTemplateIdWithFields(@Param("templateId") UUID templateId);
 
 }

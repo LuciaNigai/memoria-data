@@ -28,7 +28,7 @@ public class CardController {
 
   @PostMapping
   public ResponseEntity<CardMinimalDTO> createCard(@RequestBody CardMinimalDTO cardDTO, @RequestParam(name = "saveDuplicate", defaultValue = "false") boolean saveDuplicate) {
-    return ResponseEntity.ok().body(cardService.createCard(cardDTO, saveDuplicate));
+    return ResponseEntity.status(HttpStatus.CREATED).body(cardService.createCard(cardDTO, saveDuplicate));
   }
 
   @GetMapping("/{cardId}")
@@ -37,8 +37,8 @@ public class CardController {
   }
 
   @DeleteMapping("/{cardId}")
-  public ResponseEntity<GeneralResponseDTO> deleteCard(@PathVariable("cardId") UUID cardId) {
+  public ResponseEntity<GeneralResponseDTO<Void>> deleteCard(@PathVariable("cardId") UUID cardId) {
     cardService.deleteCard(cardId);
-    return ResponseEntity.ok().body(new GeneralResponseDTO("Card deleted succesfully.", HttpStatus.OK));
+    return ResponseEntity.ok().body(new GeneralResponseDTO<>("Card deleted successfully."));
   }
 }

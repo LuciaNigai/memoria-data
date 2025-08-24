@@ -4,6 +4,7 @@ import com.lucia.memoria.model.TemplateField;
 import com.lucia.memoria.repository.TemplateFieldRepository;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TemplateFieldService {
@@ -15,13 +16,9 @@ public class TemplateFieldService {
     this.templateFieldRepository = templateFieldRepository;
   }
 
+  @Transactional(readOnly = true)
   public TemplateField findTemplateFieldById(UUID templateFieldId) {
     return templateFieldRepository.findByTemplateFieldId(templateFieldId)
         .orElseThrow(() -> new IllegalArgumentException("Target template field does not exists"));
   }
-
-  public void deleteTemplateField(TemplateField templateField) {
-    templateFieldRepository.delete(templateField);
-  }
-
 }

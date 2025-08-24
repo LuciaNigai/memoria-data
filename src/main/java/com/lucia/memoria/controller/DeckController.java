@@ -33,7 +33,7 @@ public class DeckController {
 
   @PostMapping
   public ResponseEntity<DeckDTO> createDeck(@RequestBody DeckMinimalDTO deckMinimalDTO) {
-    return ResponseEntity.ok().body(deckService.createDeck(deckMinimalDTO));
+    return ResponseEntity.status(HttpStatus.CREATED).body(deckService.createDeck(deckMinimalDTO));
   }
 
   @GetMapping("/{deckId}/cards")
@@ -47,10 +47,9 @@ public class DeckController {
   }
 
   @DeleteMapping("/{deckId}")
-  public ResponseEntity<GeneralResponseDTO> deleteDeck(@PathVariable("deckId") UUID deckId,
+  public ResponseEntity<GeneralResponseDTO<Void>> deleteDeck(@PathVariable("deckId") UUID deckId,
       @RequestParam(name = "force", defaultValue = "false") boolean force) {
     deckService.deleteDeck(deckId, force);
-    return ResponseEntity.ok()
-        .body(new GeneralResponseDTO("Deck successfully deleted", HttpStatus.OK));
+    return ResponseEntity.ok().body(new GeneralResponseDTO<>("Deck deleted successfully."));
   }
 }

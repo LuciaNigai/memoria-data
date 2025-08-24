@@ -43,7 +43,7 @@ public class Template {
   private String name;
   private Boolean includesPartOfSpeech;
 
-  @OneToMany(mappedBy = "template", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "template", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderColumn(name = "template_fields_order")
   private List<TemplateField> fields = new ArrayList<>() {
   };
