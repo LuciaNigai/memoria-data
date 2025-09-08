@@ -82,6 +82,12 @@ public class TemplateService {
   }
 
   @Transactional(readOnly = true)
+  public Template getTemplateByName(String name) {
+    return templateRepository.findTemplateByTemplateNameWithFields(name)
+        .orElseThrow(() -> new NotFoundException("Template not found exception"));
+  }
+
+  @Transactional(readOnly = true)
   public List<TemplateDTO> getTemplatesByUserId(UUID userId) {
     User owner = userService.getUserEntityById(userId);
 

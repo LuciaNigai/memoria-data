@@ -24,4 +24,10 @@ public interface TemplateRepository extends JpaRepository<Template, Long> {
       """)
   Optional<Template> findTemplateByTemplateIdWithFields(@Param("templateId") UUID templateId);
 
+  @Query("""
+          SELECT t FROM Template t
+          JOIN FETCH t.fields
+          WHERE t.name = :name
+      """)
+  Optional<Template> findTemplateByTemplateNameWithFields(@Param("name") String name);
 }
