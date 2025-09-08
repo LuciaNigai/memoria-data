@@ -21,10 +21,10 @@ public interface CardRepository extends JpaRepository<Card, Long> {
       "WHERE c.cardId = :cardId")
   Optional<Card> findByCardIdWithFieldsAndFieldTemplates(@Param("cardId") UUID cardId);
 
-  @Query("SELECT DISTINCT c FROM Card c " +
+  @Query("SELECT c.cardId FROM Card c " +
       "JOIN c.fields f " +
       "WHERE f.content = :content")
-  List<Card> findByFieldContentWithFields(@Param("content") String content);
+  List<UUID> findCardIdsByFieldContent(@Param("content") String content);
 
   Optional<Card> findByCardId(UUID cardId);
 

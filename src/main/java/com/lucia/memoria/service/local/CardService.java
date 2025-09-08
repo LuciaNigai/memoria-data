@@ -5,6 +5,7 @@ import com.lucia.memoria.dto.local.CardMinimalDTO;
 import com.lucia.memoria.dto.local.FieldDTO;
 import com.lucia.memoria.dto.local.FieldMinimalDTO;
 import com.lucia.memoria.dto.local.ResponseDeckWithCardsDTO;
+import com.lucia.memoria.exception.ConflictWithDataException;
 import com.lucia.memoria.exception.DuplicateException;
 import com.lucia.memoria.exception.NotFoundException;
 import com.lucia.memoria.helper.FieldRole;
@@ -20,7 +21,6 @@ import com.lucia.memoria.model.Field;
 import com.lucia.memoria.model.TemplateField;
 import com.lucia.memoria.model.Template;
 import com.lucia.memoria.repository.CardRepository;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -83,6 +83,49 @@ public class CardService {
 
     return cardMapper.toMinimalDTO(savedCard);
   }
+
+  @Transactional
+  public CardMinimalDTO updateCard(CardMinimalDTO cardDTO, boolean saveDuplicates) {
+    Card card = cardRepository.findByCardIdWithFieldsAndFieldTemplates(cardDTO.getCardId())
+        .orElseThrow(() -> new NotFoundException("Card not found"));
+    Map<UUID, Field> cardFields = card.getFields().stream()
+        .filter(f -> f.getTemplateField() != null)
+        .collect(Collectors.toMap(
+            f -> f.getTemplateField().getTemplateFieldId(),
+            Function.identity(),
+            (existing, replacement) -> existing // keep first if duplicates
+        ));
+    Map<UUID, TemplateField> templateFields = card.getTemplate().getFields().stream()
+        .collect(Collectors.toMap(TemplateField::getTemplateFieldId, Function.identity()));
+
+    cardDTO.getFieldMinimalDTOList()
+        .forEach(minimalDTO -> {
+          UUID templateFieldId = minimalDTO.getTemplateFieldId();
+          Field field = cardFields.get(templateFieldId);
+          verifyForDuplicateField(minimalDTO, saveDuplicates, card.getCardId());
+          if (field != null) {
+            TemplateFieldType templateFieldType = field.getTemplateField().getTemplateFieldType();
+            setCardContent(minimalDTO, templateFieldType, field, saveDuplicates);
+          } else if (templateFields.get(templateFieldId) != null) {
+            TemplateField templateField = templateFields.get(templateFieldId);
+            TemplateFieldType templateFieldType = templateField.getTemplateFieldType();
+            field = new Field();
+            field.setTemplateField(templateField);
+            field.setCard(card);
+            field.setFieldId(UUID.randomUUID());
+            setCardContent(minimalDTO, templateFieldType, field, saveDuplicates);
+            card.getFields().add(field);
+          } else {
+            throw new ConflictWithDataException("Invalid Field templateId",
+                List.of(minimalDTO.getTemplateFieldId()));
+          }
+        });
+
+    validateCardFields(card);
+    Card savedCard = cardRepository.save(card);
+    return cardMapper.toMinimalDTO(savedCard);
+  }
+
 
   @Transactional(readOnly = true)
   public CardDTO getCardById(UUID cardId) {
@@ -161,27 +204,38 @@ public class CardService {
 
     FieldType fieldType = templateFieldType.getFieldType();
 
+    verifyForDuplicateField(minimalDTO, saveDuplicate, null);
     if (fieldType == FieldType.ENUM || fieldType == FieldType.MULTI_TAG) {
-      if (templateFieldType.getOptions() != null
-          && templateFieldType.getOptions().contains(minimalDTO.getContent())) {
-        field.setContent(minimalDTO.getContent());
-      } else {
-        throw new IllegalArgumentException(
-            "The option you choose is not valid. Please choose one of the options: "
-                + templateFieldType.getOptions());
-      }
+      setEnumTypeFieldContent(minimalDTO, templateFieldType, field);
       return;
-    }
-    List<Card> duplicates = cardRepository.findByFieldContentWithFields(minimalDTO.getContent());
-    if (!duplicates.isEmpty() && !saveDuplicate) {
-      throw new DuplicateException(
-          "The card with such field " + minimalDTO.getContent()
-              + " already exists. Are you sure you want to save it?",
-          new ArrayList<>(cardMapper.toMinimalDTOList(duplicates))
-      );
     }
 
     field.setContent(minimalDTO.getContent());
+  }
+
+  private static void setEnumTypeFieldContent(FieldMinimalDTO minimalDTO,
+      TemplateFieldType templateFieldType, Field field) {
+    if (templateFieldType.getOptions() == null ||
+        !templateFieldType.getOptions().contains(minimalDTO.getContent())) {
+      throw new IllegalArgumentException(
+          "The option you chose is not valid. Please choose one of: "
+              + templateFieldType.getOptions()
+      );
+    }
+    field.setContent(minimalDTO.getContent());
+  }
+
+  private void verifyForDuplicateField(FieldMinimalDTO minimalDTO, boolean saveDuplicate, UUID currentCardId) {
+    List<UUID> duplicateIds = cardRepository.findCardIdsByFieldContent(minimalDTO.getContent())
+        .stream()
+        .filter(id -> !id.equals(currentCardId))
+        .toList();
+    if (!duplicateIds.isEmpty() && !saveDuplicate) {
+      throw new DuplicateException(
+          "The card with such field " + minimalDTO.getContent()
+              + " already exists. Are you sure you want to save it?",
+          duplicateIds);
+    }
   }
 
   private void validateCardFields(Card card) {

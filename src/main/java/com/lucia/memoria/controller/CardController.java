@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,6 +32,10 @@ public class CardController {
     return ResponseEntity.status(HttpStatus.CREATED).body(cardService.createCard(cardDTO, saveDuplicate));
   }
 
+  @PatchMapping
+  public ResponseEntity<CardMinimalDTO> updateCard(@RequestBody CardMinimalDTO cardDTO, @RequestParam(name = "saveDuplicate", defaultValue = "false") boolean saveDuplicate) {
+    return ResponseEntity.status(HttpStatus.CREATED).body(cardService.updateCard(cardDTO, saveDuplicate));
+  }
   @GetMapping("/{cardId}")
   public ResponseEntity<CardDTO> getCardById(@PathVariable("cardId") UUID cardId) {
     return ResponseEntity.ok().body(cardService.getCardById(cardId));

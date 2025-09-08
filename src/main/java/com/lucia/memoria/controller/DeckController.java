@@ -4,12 +4,15 @@ import com.lucia.memoria.dto.local.DeckDTO;
 import com.lucia.memoria.dto.local.DeckMinimalDTO;
 import com.lucia.memoria.dto.local.GeneralResponseDTO;
 import com.lucia.memoria.dto.local.ResponseDeckWithCardsDTO;
+import com.lucia.memoria.mapper.DeckMapper;
 import com.lucia.memoria.service.local.CardService;
 import com.lucia.memoria.service.local.DeckService;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -51,5 +54,13 @@ public class DeckController {
       @RequestParam(name = "force", defaultValue = "false") boolean force) {
     deckService.deleteDeck(deckId, force);
     return ResponseEntity.ok().body(new GeneralResponseDTO<>("Deck deleted successfully."));
+  }
+
+  @PatchMapping("/{deckId}")
+  public  ResponseEntity<DeckMinimalDTO> updateDeckName(@PathVariable("deckId") UUID deckId, @RequestBody
+      Map<String, String> body) {
+    String name = body.get("name");
+
+    return ResponseEntity.ok().body(deckService.updateDeckName(deckId, name));
   }
 }

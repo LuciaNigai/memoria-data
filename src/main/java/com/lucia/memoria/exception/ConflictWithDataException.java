@@ -5,10 +5,14 @@ import lombok.Getter;
 
 @Getter
 public class ConflictWithDataException extends RuntimeException {
-  private final List<?> data;
+  private Object data;
 
-  public ConflictWithDataException(String message, List<?> data) {
+  public ConflictWithDataException(String message, Object data) {
     super(message);
     this.data = data;
   }
+  public ConflictWithDataException(String message) {
+    super(message);
+  }
+
 }
