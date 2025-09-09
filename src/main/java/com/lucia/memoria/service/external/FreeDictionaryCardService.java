@@ -27,7 +27,7 @@ public class FreeDictionaryCardService {
   private final TemplateService templateService;
 
 
-  public Mono<List<CardDTO>> generateCards(String word) {
+  public List<CardDTO> generateCards(String word) {
     Template template = templateService.getTemplateByName("default");
     List<TemplateField> templateFields = template.getFields();
 
@@ -36,7 +36,8 @@ public class FreeDictionaryCardService {
             .flatMap(
                 resp -> constructCardDTOs(resp, template, templateFields).stream()) // flatten here
             .toList()
-        );
+        )
+        .block();
   }
 
   private List<CardDTO> constructCardDTOs(ResponseDTO resp, Template template,
@@ -97,9 +98,8 @@ public class FreeDictionaryCardService {
           String synonyms = d.synonyms() != null ? " Synonyms: " + d.synonyms() : "";
           String antonyms = d.antonyms() != null ? " Antonyms: " + d.antonyms() : "";
           String examplePart = d.example() != null ? " Example: " + d.example() : "";
-          return definition + synonyms + antonyms + examplePart;
+          return definition + "\n" + synonyms + "\n" + antonyms + "\n" + examplePart;
         })
         .collect(Collectors.joining("\n"));
   }
-
 }

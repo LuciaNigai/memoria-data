@@ -26,15 +26,8 @@ public class ExternalAPIController {
 
 
   @GetMapping("/meaning/{word}")
-  public Mono<List<CardDTO>> getWordMeaning(@PathVariable("word") String word) {
-    return freeDictionaryCardService.generateCards(word);
-  }
-
-  // TODO: remove later
-  @GetMapping("/meaning/{word}/old")
-  public Mono<ResponseEntity<List<ResponseDTO>>> getWordMeaningOld(@PathVariable("word") String word) {
-    return freeDictionaryAPIService.callExternalApi(word)
-        .map(ResponseEntity::ok);
+  public ResponseEntity<List<CardDTO>> getWordMeaning(@PathVariable("word") String word) {
+    return ResponseEntity.ok().body(freeDictionaryCardService.generateCards(word));
   }
 
   @GetMapping("/translation/{source}/{target}/{word}")
@@ -42,5 +35,4 @@ public class ExternalAPIController {
       @PathVariable("target") String target, @PathVariable("word") String word) {
     return googleAPIService.callExternalApi(source, target, word);
   }
-
 }
