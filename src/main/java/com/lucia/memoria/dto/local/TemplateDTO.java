@@ -1,7 +1,9 @@
 package com.lucia.memoria.dto.local;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,6 +23,9 @@ public class TemplateDTO {
   private UUID ownerId;
   @NotBlank
   String name;
+  @NotNull
+  @Size(min = 2, message = "Template should have at least two fields")
+  @Valid
   List<TemplateFieldDTO> fields;
   Boolean includesPartOfSpeech;
 }

@@ -130,7 +130,7 @@ public class DeckService {
   }
 
   @Transactional
-  public DeckMinimalDTO updateDeckName(UUID deckId, String name) {
+  public DeckMinimalDTO renameDeck(UUID deckId, String name) {
     Deck deck = deckRepository.findByDeckId(deckId).orElseThrow(
         () -> new NotFoundException("Deck you are trying to update does not exist")
     );

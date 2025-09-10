@@ -8,11 +8,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,6 +48,14 @@ public class Card {
 
   @OneToMany(mappedBy = "card", cascade = CascadeType.ALL)
   private List<Field> fields = new ArrayList<>();
+
+  @ManyToMany
+  @JoinTable(
+      name = "card_tag",
+      joinColumns = @JoinColumn(name = "card_id"),
+      inverseJoinColumns = @JoinColumn(name = "tag_id")
+  )
+  private Set<Tag> tags;
 
   public void addField(Field field) {
     fields.add(field);

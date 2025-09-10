@@ -3,8 +3,8 @@ package com.lucia.memoria.controller;
 import com.lucia.memoria.dto.local.DeckDTO;
 import com.lucia.memoria.dto.local.DeckMinimalDTO;
 import com.lucia.memoria.dto.local.GeneralResponseDTO;
+import com.lucia.memoria.dto.local.RenameRequestDTO;
 import com.lucia.memoria.dto.local.ResponseDeckWithCardsDTO;
-import com.lucia.memoria.mapper.DeckMapper;
 import com.lucia.memoria.service.local.CardService;
 import com.lucia.memoria.service.local.DeckService;
 import java.util.Map;
@@ -57,10 +57,8 @@ public class DeckController {
   }
 
   @PatchMapping("/{deckId}")
-  public  ResponseEntity<DeckMinimalDTO> updateDeckName(@PathVariable("deckId") UUID deckId, @RequestBody
-      Map<String, String> body) {
-    String name = body.get("name");
-
-    return ResponseEntity.ok().body(deckService.updateDeckName(deckId, name));
+  public  ResponseEntity<DeckMinimalDTO> renameDeck(@PathVariable("deckId") UUID deckId, @RequestBody
+      RenameRequestDTO newName) {
+    return ResponseEntity.ok().body(deckService.renameDeck(deckId, newName.name()));
   }
 }

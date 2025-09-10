@@ -6,6 +6,12 @@ import com.lucia.memoria.dto.local.UserDTO;
 import com.lucia.memoria.service.local.DeckService;
 import com.lucia.memoria.service.local.TemplateService;
 import com.lucia.memoria.service.local.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,18 +39,29 @@ public class UserController {
     this.templateService = templateService;
   }
 
+  @Operation(summary = "Create new user")
+  @ApiResponse(responseCode = "200", description = "Created user", content = {
+      @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))})
   @PostMapping
   public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
     UserDTO savedUser = userService.createUser(userDTO);
     return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
   }
 
+  @Operation(summary = "Get user by id")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "User", content = {
+          @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))}),
+      @ApiResponse(responseCode = "400", description = "User not found", content = @Content)})
   @GetMapping("/{userId}")
   public ResponseEntity<UserDTO> getUserById(@PathVariable("userId") UUID userId) {
     UserDTO user = userService.getUserById(userId);
     return ResponseEntity.ok(user);
   }
 
+  @Operation(summary = "Get all users")
+  @ApiResponse(responseCode = "200", description = "Returns a list of all users", content = {
+      @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserDTO.class)))})
   @GetMapping
   public ResponseEntity<List<UserDTO>> getAllUsers() {
     List<UserDTO> users = userService.getAllUsers();

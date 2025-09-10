@@ -1,7 +1,9 @@
 package com.lucia.memoria.dto.local;
 
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,5 +23,6 @@ public class CardDTO {
   UUID deckId;
   @NotNull
   UUID templateId;
+  @NotEmpty
   List<FieldDTO> fieldDTOList;
 }

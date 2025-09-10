@@ -2,6 +2,7 @@ package com.lucia.memoria.repository;
 
 import com.lucia.memoria.model.Card;
 import com.lucia.memoria.model.Deck;
+import com.lucia.memoria.model.Tag;
 import com.lucia.memoria.model.Template;
 import java.util.Optional;
 import java.util.UUID;

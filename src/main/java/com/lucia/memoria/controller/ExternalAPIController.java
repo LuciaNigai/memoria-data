@@ -1,8 +1,6 @@
 package com.lucia.memoria.controller;
 
-import com.lucia.memoria.dto.externalapi.ResponseDTO;
 import com.lucia.memoria.dto.local.CardDTO;
-import com.lucia.memoria.service.external.FreeDictionaryAPIService;
 import com.lucia.memoria.service.external.FreeDictionaryCardService;
 import com.lucia.memoria.service.external.GoogleAPIService;
 import lombok.AllArgsConstructor;
@@ -21,17 +19,16 @@ import java.util.List;
 public class ExternalAPIController {
 
   private final FreeDictionaryCardService freeDictionaryCardService;
-  private final FreeDictionaryAPIService freeDictionaryAPIService;
   private final GoogleAPIService googleAPIService;
 
 
   @GetMapping("/meaning/{word}")
-  public ResponseEntity<List<CardDTO>> getWordMeaning(@PathVariable("word") String word) {
+  public ResponseEntity<List<CardDTO>> getWordDefinition(@PathVariable("word") String word) {
     return ResponseEntity.ok().body(freeDictionaryCardService.generateCards(word));
   }
 
   @GetMapping("/translation/{source}/{target}/{word}")
-  public Mono<String> getWordMeaning(@PathVariable("source") String source,
+  public Mono<String> getWordDefinition(@PathVariable("source") String source,
       @PathVariable("target") String target, @PathVariable("word") String word) {
     return googleAPIService.callExternalApi(source, target, word);
   }
